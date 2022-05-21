@@ -15,12 +15,12 @@ class User(db.Document, UserMixin):
     middle_name= db.StringField(max_length=20)
     email= db.EmailField(max_length=50, unique=True,required=True)
     password= db.StringField(max_length=100, required=True)
-    coutry= db.StringField(max_length=50)
+    country= db.StringField(max_length=50)
     date_of_birth= db.DateField()
     profile_pict= db.StringField(max_length=255, default= "default.jpg")
     #security question
     security_quest= db.StringField(max_length=255)
-    security_ans= db.StringField(max_length=20)
+    security_ans= db.StringField(max_length=30)
     #recovery
     recovery_mail= db.EmailField(max_length=50)
     recovery_no= db.StringField(max_length=14)
