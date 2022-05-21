@@ -1,5 +1,4 @@
 import os
 class Config:
-    MONGODB_HOST = os.environ.get('SAVECLOUD_DATABASE_URI')
-    print(MONGODB_HOST)
+    MONGODB_HOST = os.environ.get('CLOUDBOX_DATABASE_URI')
     SECRET_KEY= os.environ.get('FLASK_SECRET_KEY')
