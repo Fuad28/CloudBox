@@ -4,31 +4,31 @@
   <head>
     <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <title>Home</title>
+      <title>CloudBOX | Home</title>
       
       <!-- Favicon -->
-      <link rel="shortcut icon" href="static/assets/images/favicon.ico" />
+      <link rel="shortcut icon" href="static/images/favicon.ico" />
       
-      <link rel="stylesheet" href="static/assets/css/backend-plugin.min.css">
-      <link rel="stylesheet" href="static/assets/css/backend.css?v=1.0.0">
+      <link rel="stylesheet" href="static/css/backend-plugin.min.css">
+      <link rel="stylesheet" href="static/css/backend.css?v=1.0.0">
       
-      <link rel="stylesheet" href="static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css">
-      <link rel="stylesheet" href="static/assets/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css">
-      <link rel="stylesheet" href="static/assets/vendor/remixicon/fonts/remixicon.css">
+      <link rel="stylesheet" href="static/vendor/@fortawesome/fontawesome-free/css/all.min.css">
+      <link rel="stylesheet" href="static/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css">
+      <link rel="stylesheet" href="static/vendor/remixicon/fonts/remixicon.css">
       
       <!-- Viewer Plugin -->
         <!--PDF-->
-        <link rel="stylesheet" href="static/assets/vendor/doc-viewer/include/pdf/pdf.viewer.css">
+        <link rel="stylesheet" href="static/vendor/doc-viewer/include/pdf/pdf.viewer.css">
         <!--Docs-->
         <!--PPTX-->
-        <link rel="stylesheet" href="static/assets/vendor/doc-viewer/include/PPTXjs/css/pptxjs.css">
-        <link rel="stylesheet" href="static/assets/vendor/doc-viewer/include/PPTXjs/css/nv.d3.min.css">
+        <link rel="stylesheet" href="static/vendor/doc-viewer/include/PPTXjs/css/pptxjs.css">
+        <link rel="stylesheet" href="static/vendor/doc-viewer/include/PPTXjs/css/nv.d3.min.css">
         <!--All Spreadsheet -->
-        <link rel="stylesheet" href="static/assets/vendor/doc-viewer/include/SheetJS/handsontable.full.min.css">
+        <link rel="stylesheet" href="static/vendor/doc-viewer/include/SheetJS/handsontable.full.min.css">
         <!--Image viewer-->
-        <link rel="stylesheet" href="static/assets/vendor/doc-viewer/include/verySimpleImageViewer/css/jquery.verySimpleImageViewer.css">
+        <link rel="stylesheet" href="static/vendor/doc-viewer/include/verySimpleImageViewer/css/jquery.verySimpleImageViewer.css">
         <!--officeToHtml-->
-        <link rel="stylesheet" href="static/assets/vendor/doc-viewer/include/officeToHtml/officeToHtml.css">  </head>
+        <link rel="stylesheet" href="static/vendor/doc-viewer/include/officeToHtml/officeToHtml.css">  </head>
   <body class="  ">
     <!-- loader Start -->
     <div id="loading">
@@ -42,7 +42,7 @@
       <div class="iq-sidebar  sidebar-default ">
           <div class="iq-sidebar-logo d-flex align-items-center justify-content-between">
               <a href="index.html" class="header-logo">
-                  <img src="static/assets/images/logo.png" class="img-fluid rounded-normal light-logo" alt="logo">
+                  <img src="static/images/logo.png" class="img-fluid rounded-normal light-logo" alt="logo">
                </a>
               <div class="iq-menu-bt-sidebar">
                   <i class="las la-bars wrapper-menu"></i>
@@ -62,7 +62,328 @@
                       </ul>
                   </div>
               </div>
-      
+              <nav class="iq-sidebar-menu">
+                  <ul id="iq-sidebar-toggle" class="iq-menu">
+                       <li class="active">
+                              <a href="../backend/index.html" class="">
+                                  <i class="las la-home iq-arrow-left"></i><span>Dashboard</span>
+                              </a>
+                          <ul id="dashboard" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+                          </ul>
+                       </li>
+                       <li class=" ">
+                          <a href="#mydrive" class="collapsed" data-toggle="collapse" aria-expanded="false">
+                              <i class="las la-hdd"></i><span>My Drive</span>
+                              <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                              <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                          </a>
+                          <ul id="mydrive" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+                                  <li class=" ">
+                                          <a href="../backend/page-alexa.html">
+                                              <i class="lab la-blogger-b"></i><span>Alexa Workshop</span>
+                                          </a>
+                                  </li>
+                                  <li class=" ">
+                                          <a href="../backend/page-android.html">
+                                              <i class="las la-share-alt"></i><span>Android</span>
+                                          </a>
+                                  </li>
+                                  <li class=" ">
+                                          <a href="../backend/page-brightspot.html">
+                                              <i class="las la-icons"></i><span>Brightspot</span>
+                                          </a>
+                                  </li>
+                                  <li class=" ">
+                                          <a href="../backend/page-ionic.html">
+                                              <i class="las la-icons"></i><span>Ionic Chat App</span>
+                                          </a>
+                                  </li>
+                          </ul>
+                       </li>
+                       <li class=" ">
+                              <a href="../backend/page-files.html" class="">
+                                  <i class="lar la-file-alt iq-arrow-left"></i><span>Files</span>
+                              </a>
+                          <ul id="page-files" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+                          </ul>
+                       </li>
+                       <li class=" ">
+                              <a href="../backend/page-folders.html" class="">
+                                  <i class="las la-stopwatch iq-arrow-left"></i><span>Recent</span>
+                              </a>
+                          <ul id="page-folders" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+                          </ul>
+                       </li>
+                       <li class=" ">
+                              <a href="../backend/page-favourite.html" class="">
+                                  <i class="lar la-star"></i><span>Favourite</span>
+                              </a>
+                          <ul id="page-fevourite" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+                          </ul>
+                       </li>
+                       <li class=" ">
+                              <a href="../backend/page-delete.html" class="">
+                                  <i class="las la-trash-alt iq-arrow-left"></i><span>Trash</span>
+                              </a>
+                          <ul id="page-delete" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+                          </ul>
+                       </li>
+                       <li class=" ">
+                          <a href="#otherpage" class="collapsed" data-toggle="collapse" aria-expanded="false">
+                              <i class="lab la-wpforms iq-arrow-left"></i><span>other page</span>
+                              <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                              <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                          </a>
+                          <ul id="otherpage" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+                                  <li class=" ">
+                                      <a href="#user" class="collapsed" data-toggle="collapse" aria-expanded="false">
+                                          <i class="las la-user-cog"></i><span>User Details</span>
+                                          <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                                          <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                                      </a>
+                                      <ul id="user" class="iq-submenu collapse" data-parent="#otherpage">
+                                              <li class=" ">
+                                                  <a href="../app/user-profile.html">
+                                                      <i class="las la-id-card"></i><span>User Profile</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../app/user-add.html">
+                                                      <i class="las la-user-plus"></i><span>User Add</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../app/user-list.html">
+                                                      <i class="las la-list-alt"></i><span>User List</span>
+                                                  </a>
+                                              </li>
+                                      </ul>
+                                  </li>
+                                  <li class=" ">
+                                      <a href="#ui" class="collapsed" data-toggle="collapse" aria-expanded="false">
+                                          <i class="lab la-uikit iq-arrow-left"></i><span>UI Elements</span>
+                                          <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                                          <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                                      </a>
+                                      <ul id="ui" class="iq-submenu collapse" data-parent="#otherpage">
+                                              <li class=" ">
+                                                  <a href="../backend/ui-avatars.html">
+                                                      <i class="las la-user-tie"></i><span>Avatars</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-alerts.html">
+                                                      <i class="las la-exclamation-triangle"></i><span>Alerts</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-badges.html">
+                                                      <i class="las la-id-badge"></i><span>Badges</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-breadcrumb.html">
+                                                      <i class="las la-ellipsis-h"></i><span>Breadcrumb</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-buttons.html">
+                                                      <i class="las la-ticket-alt"></i><span>Buttons</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-buttons-group.html">
+                                                      <i class="las la-object-group"></i><span>Buttons Group</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-boxshadow.html">
+                                                      <i class="las la-boxes"></i><span>Box Shadow</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-colors.html">
+                                                      <i class="las la-brush"></i><span>Colors</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-cards.html">
+                                                      <i class="las la-credit-card"></i><span>Cards</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-carousel.html">
+                                                      <i class="las la-sliders-h"></i><span>Carousel</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-grid.html">
+                                                      <i class="las la-th-large"></i><span>Grid</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-helper-classes.html">
+                                                      <i class="las la-hands-helping"></i><span>Helper classes</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-images.html">
+                                                      <i class="las la-image"></i><span>Images</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-list-group.html">
+                                                      <i class="las la-list-alt"></i><span>list Group</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-media-object.html">
+                                                      <i class="las la-photo-video"></i><span>Media</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-modal.html">
+                                                      <i class="las la-columns"></i><span>Modal</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-notifications.html">
+                                                      <i class="las la-bell"></i><span>Notifications</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-pagination.html">
+                                                      <i class="las la-ellipsis-h"></i><span>Pagination</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-popovers.html">
+                                                      <i class="las la-spinner"></i><span>Popovers</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-progressbars.html">
+                                                      <i class="las la-heading"></i><span>Progressbars</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-typography.html">
+                                                      <i class="las la-tablet"></i><span>Typography</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-tabs.html">
+                                                      <i class="las la-tablet"></i><span>Tabs</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-tooltips.html">
+                                                      <i class="las la-magnet"></i><span>Tooltips</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/ui-embed-video.html">
+                                                      <i class="las la-play-circle"></i><span>Video</span>
+                                                  </a>
+                                              </li>
+                                      </ul>
+                                  </li>
+                                  <li class=" ">
+                                      <a href="#auth" class="collapsed" data-toggle="collapse" aria-expanded="false">
+                                          <i class="las la-torah iq-arrow-left"></i><span>Authentication</span>
+                                          <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                                          <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                                      </a>
+                                      <ul id="auth" class="iq-submenu collapse" data-parent="#otherpage">
+                                              <li class=" ">
+                                                  <a href="../backend/auth-sign-in.html">
+                                                      <i class="las la-sign-in-alt"></i><span>Login</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/auth-sign-up.html">
+                                                      <i class="las la-registered"></i><span>Register</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/auth-recoverpw.html">
+                                                      <i class="las la-unlock-alt"></i><span>Recover Password</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/auth-confirm-mail.html">
+                                                      <i class="las la-envelope-square"></i><span>Confirm Mail</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/auth-lock-screen.html">
+                                                      <i class="las la-lock"></i><span>Lock Screen</span>
+                                                  </a>
+                                              </li>
+                                      </ul>
+                                  </li>
+                                  <li class=" ">
+                                      <a href="#pricing" class="collapsed" data-toggle="collapse" aria-expanded="false">
+                                          <i class="las la-coins"></i><span>Pricing</span>
+                                          <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                                          <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                                      </a>
+                                      <ul id="pricing" class="iq-submenu collapse" data-parent="#otherpage">
+                                              <li class=" ">
+                                                  <a href="../backend/pricing.html">
+                                                      <i class="las la-weight"></i><span>Pricing 1</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/pricing-2.html">
+                                                      <i class="las la-dna"></i><span>Pricing 2</span>
+                                                  </a>
+                                              </li>
+                                      </ul>
+                                  </li>
+                                  <li class=" ">
+                                      <a href="#pages-error" class="collapsed" data-toggle="collapse" aria-expanded="false">
+                                          <i class="las la-exclamation-triangle"></i><span>Error</span>
+                                          <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                                          <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                                      </a>
+                                      <ul id="pages-error" class="iq-submenu collapse" data-parent="#otherpage">
+                                              <li class=" ">
+                                                  <a href="../backend/pages-error.html">
+                                                      <i class="las la-bomb"></i><span>Error 404</span>
+                                                  </a>
+                                              </li>
+                                              <li class=" ">
+                                                  <a href="../backend/pages-error-500.html">
+                                                      <i class="las la-exclamation-circle"></i><span>Error 500</span>
+                                                  </a>
+                                              </li>
+                                      </ul>
+                                  </li>
+                                  <li class=" ">
+                                          <a href="../backend/pages-blank-page.html">
+                                              <i class="las la-pager"></i><span>Blank Page</span>
+                                          </a>
+                                  </li>
+                                  <li class=" ">
+                                          <a href="../backend/pages-maintenance.html">
+                                              <i class="las la-cubes"></i><span>Maintenance</span>
+                                          </a>
+                                  </li>
+                          </ul>
+                       </li>
+                  </ul>
+              </nav>
+              <div class="sidebar-bottom">
+                  <h4 class="mb-3"><i class="las la-cloud mr-2"></i>Storage</h4>
+                  <p>17.1 / 20 GB Used</p>
+                  <div class="iq-progress-bar mb-3">
+                      <span class="bg-primary iq-progress progress-1" data-percent="67">
+                      </span>
+                  </div>
+                  <p>75% Full - 3.9 GB Free</p>
+                  <a href="#" class="btn btn-outline-primary view-more mt-4">Buy Storage</a>
+              </div>
               <div class="p-3"></div>
           </div>
           </div>       <div class="iq-top-navbar">
@@ -71,8 +392,8 @@
               <div class="iq-navbar-logo d-flex align-items-center justify-content-between">
                   <i class="ri-menu-line wrapper-menu"></i>
                   <a href="index.html" class="header-logo">
-                      <img src="static/assets/images/logo.png" class="img-fluid rounded-normal light-logo" alt="logo">
-                      <img src="static/assets/images/logo-white.png" class="img-fluid rounded-normal darkmode-logo" alt="logo">
+                      <img src="static/images/logo.png" class="img-fluid rounded-normal light-logo" alt="logo">
+                      <img src="static/images/logo-white.png" class="img-fluid rounded-normal darkmode-logo" alt="logo">
                   </a>
               </div>
                   <div class="iq-search-bar device-search">
@@ -271,7 +592,7 @@
                     </div>
                 </div>
                 <div class="col-lg-8">
-                    <div class="card card-block card-stretch card-height iq-welcome" style="background: url(static/assets/images/layouts/mydrive/background.png) no-repeat scroll right center; background-color: #ffffff; background-size: contain;">
+                    <div class="card card-block card-stretch card-height iq-welcome" style="background: url(static/images/layouts/mydrive/background.png) no-repeat scroll right center; background-color: #ffffff; background-size: contain;">
                         <div class="card-body property2-content">
                             <div class="d-flex flex-wrap align-items-center">
                                 <div class="col-lg-6 col-sm-6 p-0">
@@ -293,17 +614,17 @@
                         <div class="card-body">
                             <ul class="list-inline p-0 mb-0 row align-items-center">
                                 <li class="col-lg-6 col-sm-6 mb-3 mb-sm-0"> 
-                                    <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/assets/vendor/doc-viewer/files/demo.pdf" data-toggle="modal" data-target="#exampleModal" data-title="Product-planning.pdf" style="cursor: pointer;" class="p-2 text-center border rounded">
+                                    <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/vendor/doc-viewer/files/demo.pdf" data-toggle="modal" data-target="#exampleModal" data-title="Product-planning.pdf" style="cursor: pointer;" class="p-2 text-center border rounded">
                                         <div>
-                                            <img src="static/assets/images/layouts/mydrive/folder-1.png" class="img-fluid mb-1" alt="image1">
+                                            <img src="static/images/layouts/mydrive/folder-1.png" class="img-fluid mb-1" alt="image1">
                                         </div>
                                         <p class="mb-0">Planning</p>
                                     </div>
                                 </li>
                                 <li class="col-lg-6 col-sm-6"> 
-                                    <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/assets/vendor/doc-viewer/files/demo.docx" data-toggle="modal" data-target="#exampleModal" data-title="Wireframe.docx" style="cursor: pointer;" class="p-2 text-center border rounded">
+                                    <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/vendor/doc-viewer/files/demo.docx" data-toggle="modal" data-target="#exampleModal" data-title="Wireframe.docx" style="cursor: pointer;" class="p-2 text-center border rounded">
                                         <div>
-                                            <img src="static/assets/images/layouts/mydrive/folder-2.png" class="img-fluid mb-1" alt="image2">
+                                            <img src="static/images/layouts/mydrive/folder-2.png" class="img-fluid mb-1" alt="image2">
                                         </div>
                                         <p class="mb-0">Wireframe</p>
                                     </div>
@@ -328,10 +649,10 @@
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="card card-block card-stretch card-height">
                         <div class="card-body image-thumb">
-                            <a href="#" data-title="Terms.pdf" data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/assets/vendor/doc-viewer/files/demo.pdf" data-toggle="modal" data-target="#exampleModal">
+                            <a href="#" data-title="Terms.pdf" data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/vendor/doc-viewer/files/demo.pdf" data-toggle="modal" data-target="#exampleModal">
                                 <div class="mb-4 text-center p-3 rounded iq-thumb">
                                     <div class="iq-image-overlay"></div>
-                                    <img src="static/assets/images/layouts/page-1/pdf.png" class="img-fluid" alt="image1">       
+                                    <img src="static/images/layouts/page-1/pdf.png" class="img-fluid" alt="image1">       
                                 </div>
                                 <h6>Terms.pdf</h6> 
                             </a>             
@@ -341,10 +662,10 @@
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="card card-block card-stretch card-height">
                         <div class="card-body image-thumb">
-                            <a href="#" data-title="New-one.docx" data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/assets/vendor/doc-viewer/files/demo.docx" data-toggle="modal" data-target="#exampleModal">
+                            <a href="#" data-title="New-one.docx" data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/vendor/doc-viewer/files/demo.docx" data-toggle="modal" data-target="#exampleModal">
                             <div class="mb-4 text-center p-3 rounded iq-thumb">
                                 <div class="iq-image-overlay"></div>
-                                <img src="static/assets/images/layouts/page-1/doc.png" class="img-fluid" alt="image1">
+                                <img src="static/images/layouts/page-1/doc.png" class="img-fluid" alt="image1">
                             </div>
                             <h6>New-one.docx</h6>  
                             </a>   
@@ -354,10 +675,10 @@
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="card card-block card-stretch card-height">
                         <div class="card-body image-thumb">
-                            <a href="#" data-title="Woo-box.xlsx" data-load-file="file" data-load-target="#resolte-contaniner"  data-url="static/assets/vendor/doc-viewer/files/demo.xlsx" data-toggle="modal" data-target="#exampleModal">
+                            <a href="#" data-title="Woo-box.xlsx" data-load-file="file" data-load-target="#resolte-contaniner"  data-url="static/vendor/doc-viewer/files/demo.xlsx" data-toggle="modal" data-target="#exampleModal">
                                 <div class="mb-4 text-center p-3 rounded iq-thumb">
                                     <div class="iq-image-overlay"></div>
-                                    <img src="static/assets/images/layouts/page-1/xlsx.png" class="img-fluid" alt="image1">
+                                    <img src="static/images/layouts/page-1/xlsx.png" class="img-fluid" alt="image1">
                                 </div>
                                 <h6>Woo-box.xlsx</h6>
                             </a>
@@ -367,10 +688,10 @@
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="card card-block card-stretch card-height">
                         <div class="card-body image-thumb doc-text">
-                            <a href="#" data-title="IOS-content.pptx" data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/assets/vendor/doc-viewer/files/demo.pptx" data-toggle="modal" data-target="#exampleModal">
+                            <a href="#" data-title="IOS-content.pptx" data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/vendor/doc-viewer/files/demo.pptx" data-toggle="modal" data-target="#exampleModal">
                             <div class="mb-4 text-center p-3 rounded iq-thumb">
                                 <div class="iq-image-overlay"></div>
-                                <img src="static/assets/images/layouts/page-1/ppt.png" class="img-fluid" alt="image1">      
+                                <img src="static/images/layouts/page-1/ppt.png" class="img-fluid" alt="image1">      
                             </div>
                             <h6>IOS-content.pptx</h6>   
                             </a>       
@@ -557,7 +878,7 @@
                                                 <div class="icon-small bg-danger rounded mr-3">
                                                     <i class="ri-file-excel-line"></i>
                                                 </div>
-                                                <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/assets/vendor/doc-viewer/files/demo.pdf" data-toggle="modal" data-target="#exampleModal" data-title="Weekly-report.pdf" style="cursor: pointer;">Weekly-report.pdf</div>
+                                                <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/vendor/doc-viewer/files/demo.pdf" data-toggle="modal" data-target="#exampleModal" data-title="Weekly-report.pdf" style="cursor: pointer;">Weekly-report.pdf</div>
                                             </div>
                                         </td>
                                         <td>Me</td>
@@ -584,7 +905,7 @@
                                                 <div class="icon-small bg-primary rounded mr-3">
                                                     <i class="ri-file-download-line"></i>
                                                 </div>
-                                                <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/assets/vendor/doc-viewer/files/demo.pdf" data-toggle="modal" data-target="#exampleModal" data-title="VueJs.pdf" style="cursor: pointer;">VueJs.pdf</div>
+                                                <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/vendor/doc-viewer/files/demo.pdf" data-toggle="modal" data-target="#exampleModal" data-title="VueJs.pdf" style="cursor: pointer;">VueJs.pdf</div>
                                             </div>
                                         </td>
                                         <td>Poul Molive</td>
@@ -611,7 +932,7 @@
                                                 <div class="icon-small bg-info rounded mr-3">
                                                     <i class="ri-file-excel-line"></i>
                                                 </div>
-                                                <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/assets/vendor/doc-viewer/files/demo.docx" data-toggle="modal" data-target="#exampleModal" data-title="Milestone.docx" style="cursor: pointer;">Milestone.docx</div>
+                                                <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/vendor/doc-viewer/files/demo.docx" data-toggle="modal" data-target="#exampleModal" data-title="Milestone.docx" style="cursor: pointer;">Milestone.docx</div>
                                             </div>
                                         </td>
                                         <td>Me</td>
@@ -638,7 +959,7 @@
                                                 <div class="icon-small bg-success rounded mr-3">
                                                     <i class="ri-file-excel-line"></i>
                                                 </div>
-                                                <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/assets/vendor/doc-viewer/files/demo.xlsx" data-toggle="modal" data-target="#exampleModal" data-title="Training center.xlsx" style="cursor: pointer;">Training center.xlsx</div>
+                                                <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/vendor/doc-viewer/files/demo.xlsx" data-toggle="modal" data-target="#exampleModal" data-title="Training center.xlsx" style="cursor: pointer;">Training center.xlsx</div>
                                             </div>
                                         </td>
                                         <td>Me</td>
@@ -665,7 +986,7 @@
                                                 <div class="icon-small bg-warning rounded mr-3">
                                                     <i class="ri-file-excel-line"></i>
                                                 </div>
-                                                <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/assets/vendor/doc-viewer/files/demo.pptx" data-toggle="modal" data-target="#exampleModal" data-title="Flavour.pptx" style="cursor: pointer;">Flavour.pptx</div>
+                                                <div data-load-file="file" data-load-target="#resolte-contaniner" data-url="static/vendor/doc-viewer/files/demo.pptx" data-toggle="modal" data-target="#exampleModal" data-title="Flavour.pptx" style="cursor: pointer;">Flavour.pptx</div>
                                             </div>
                                         </td>
                                         <td>Me</td>
@@ -738,7 +1059,7 @@
                                 <a href="#" class="btn d-inline-block mt-5">Go Premium</a>
                                </div>
                                 <div class="col-6">
-                                    <img src="static/assets/images/layouts/mydrive/lock-bg.png" class="img-fluid" alt="image1">
+                                    <img src="static/images/layouts/mydrive/lock-bg.png" class="img-fluid" alt="image1">
                                 </div>
                             </div>                     
                         </div>
@@ -791,35 +1112,35 @@
         </div>
     </footer>
     <!-- Backend Bundle JavaScript -->
-    <script src="static/assets/js/backend-bundle.min.js"></script>
+    <script src="static/js/backend-bundle.min.js"></script>
     
     <!-- Chart Custom JavaScript -->
-    <script src="static/assets/js/customizer.js"></script>
+    <script src="static/js/customizer.js"></script>
     
     <!-- Chart Custom JavaScript -->
-    <script src="static/assets/js/chart-custom.js"></script>
+    <script src="static/js/chart-custom.js"></script>
     
     <!--PDF-->
-    <script src="static/assets/vendor/doc-viewer/include/pdf/pdf.js"></script>
+    <script src="static/vendor/doc-viewer/include/pdf/pdf.js"></script>
     <!--Docs-->
-    <script src="static/assets/vendor/doc-viewer/include/docx/jszip-utils.js"></script>
-    <script src="static/assets/vendor/doc-viewer/include/docx/mammoth.browser.min.js"></script>
+    <script src="static/vendor/doc-viewer/include/docx/jszip-utils.js"></script>
+    <script src="static/vendor/doc-viewer/include/docx/mammoth.browser.min.js"></script>
     <!--PPTX-->
-    <script src="static/assets/vendor/doc-viewer/include/PPTXjs/js/filereader.js"></script>
-    <script src="static/assets/vendor/doc-viewer/include/PPTXjs/js/d3.min.js"></script>
-    <script src="static/assets/vendor/doc-viewer/include/PPTXjs/js/nv.d3.min.js"></script>
-    <script src="static/assets/vendor/doc-viewer/include/PPTXjs/js/pptxjs.js"></script>
-    <script src="static/assets/vendor/doc-viewer/include/PPTXjs/js/divs2slides.js"></script>
+    <script src="static/vendor/doc-viewer/include/PPTXjs/js/filereader.js"></script>
+    <script src="static/vendor/doc-viewer/include/PPTXjs/js/d3.min.js"></script>
+    <script src="static/vendor/doc-viewer/include/PPTXjs/js/nv.d3.min.js"></script>
+    <script src="static/vendor/doc-viewer/include/PPTXjs/js/pptxjs.js"></script>
+    <script src="static/vendor/doc-viewer/include/PPTXjs/js/divs2slides.js"></script>
     <!--All Spreadsheet -->
-    <script src="static/assets/vendor/doc-viewer/include/SheetJS/handsontable.full.min.js"></script>
-    <script src="static/assets/vendor/doc-viewer/include/SheetJS/xlsx.full.min.js"></script>
+    <script src="static/vendor/doc-viewer/include/SheetJS/handsontable.full.min.js"></script>
+    <script src="static/vendor/doc-viewer/include/SheetJS/xlsx.full.min.js"></script>
     <!--Image viewer-->
-    <script src="static/assets/vendor/doc-viewer/include/verySimpleImageViewer/js/jquery.verySimpleImageViewer.js"></script>
+    <script src="static/vendor/doc-viewer/include/verySimpleImageViewer/js/jquery.verySimpleImageViewer.js"></script>
     <!--officeToHtml-->
-    <script src="static/assets/vendor/doc-viewer/include/officeToHtml/officeToHtml.js"></script>
-    <script src="static/assets/js/doc-viewer.js"></script>
+    <script src="static/vendor/doc-viewer/include/officeToHtml/officeToHtml.js"></script>
+    <script src="static/js/doc-viewer.js"></script>
     <!-- app JavaScript -->
-    <script src="static/assets/js/app.js"></script>
+    <script src="static/js/app.js"></script>
      <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl" role="document">

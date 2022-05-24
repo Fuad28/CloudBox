@@ -1,0 +1,102 @@
+
+
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <title>CloudBOX | Sign in</title>
+      
+      <!-- Favicon -->
+      <!-- <link rel="shortcut icon" href="static/assets/images/favicon.ico" /> -->
+      <link rel="shortcut icon" href="{{url_for('static', filename= 'images/favicon.ico')}}" />
+      
+      <link rel="stylesheet" href="{{url_for('static', filename= 'css/backend-plugin.min.css')}}">
+      <link rel="stylesheet" href="{{url_for('static', filename= 'css/backend.css')}}">
+      
+      <link rel="stylesheet" href="{{url_for('static', filename= 'vendor/@fortawesome/fontawesome-free/css/all.min.css')}}">
+      <link rel="stylesheet" href="{{url_for('static',filename= 'vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css')}}">
+      <link rel="stylesheet" href="{{url_for('static',filename= 'vendor/remixicon/fonts/remixicon.css')}}">
+      
+  <body class=" "> 
+      <div class="wrapper">
+      <section class="login-content">
+         <div class="container h-100">
+            <div class="row justify-content-center align-items-center height-self-center">
+               <div class="col-md-5 col-sm-12 col-12 align-self-center">
+                  <div class="sign-user_card">
+                        <img src="{{url_for('static', filename= 'images/logo.png')}}" class="img-fluid rounded-normal light-logo logo" alt="logo">
+                        <img src="{{url_for('static', filename= 'images/logo-white.png')}}" class="img-fluid rounded-normal darkmode-logo logo" alt="logo">
+                     <h3 class="mb-3">Sign In</h3>
+                     <p>Login to stay connected.</p>
+                     <div class="col-md-8">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                          {% if messages %}
+                            {% for category, message in messages %}
+                              <div class="alert alert-{{ category }}">
+                                {{ message }}
+                              </div>
+                            {% endfor %}
+                          {% endif %}
+                        {% endwith %}
+                      </div>
+                     <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        <div class="row">
+                           <div class="col-lg-12"></div>
+                              <div class="floating-label form-group">
+                                 {% if form.email.errors %}
+                                    {{ form.email(class="floating-input form-control is-invalid", placeholder=" ", type="email") }}
+                                    <div class="invalid-feedback">
+                                       {% for error in form.email.errors %}
+                                           <span>{{ error }}</span>
+                                       {% endfor %}
+                                   </div>
+                                 {% else %}
+                                   {{ form.email(class="floating-input form-control", placeholder=" ", type="email") }}
+                                 {% endif %}
+                                 <label>Email</label>
+                              </div>
+                           </div>
+                           <div class="col-lg-12"></div>
+                              <div class="floating-label form-group">
+                                 {% if form.password.errors %}
+                                    {{ form.password(class="floating-input form-control is-invalid ", id="myInput", placeholder=" ", type="password") }}
+                                    <div class="invalid-feedback">
+                                       {% for error in form.password.errors %}
+                                           <span>{{ error }}</span>
+                                       {% endfor %}
+                                   </div>
+                                 {% else %}
+                                   {{ form.password(class="floating-input form-control", placeholder=" ", id="myInput", type="password") }}
+                                 {% endif %}
+                                 <label>Password</label>
+                              </div>
+                              <input type="checkbox" onclick="myFunction()" class= "password-checkbox"> Show Password
+                           </div>
+                           <div class="custom-control custom-checkbox mb-3 text-left">
+                              {{ form.remember(type="checkbox", class="custom-control-input", id="customCheck1") }}
+                              <label class="custom-control-label" for="customCheck1">Remember Me</label>
+                          </div>
+                           </div>
+                           <div class="col-lg-6">
+                              <a href="auth-recoverpw.html" class="text-primary float-right">Forgot Password?</a>
+                           </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Sign In</button>
+                        <p class="mt-3">
+                           Create an Account <a href="{{ url_for('users.signup') }}" class="text-primary">Sign Up</a>
+                        </p>
+                     </form>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+      </div>
+    
+    <!-- Backend Bundle JavaScript -->
+    <script src="{{url_for('static', filename= 'js/backend-bundle.min.js')}}"></script> 
+  </body>
+</html>

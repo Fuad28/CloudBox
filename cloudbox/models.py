@@ -6,7 +6,7 @@ from datetime import datetime
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(user_id)
+    return User.objects.first()
 
 class User(db.Document, UserMixin):
     #personal
@@ -16,6 +16,7 @@ class User(db.Document, UserMixin):
     email= db.EmailField(max_length=50, unique=True,required=True)
     password= db.StringField(max_length=100, required=True)
     country= db.StringField(max_length=50)
+    phone= db.StringField(max_length=14)
     date_of_birth= db.DateField()
     profile_pict= db.StringField(max_length=255, default= "default.jpg")
     #security question
