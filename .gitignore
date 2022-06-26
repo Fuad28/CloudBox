@@ -292,3 +292,4 @@ dmypy.json
 cython_debug/
 .DS_store
 UI/
+client_secrets.json

@@ -1,14 +1,11 @@
-from flask import Flask, render_template, Blueprint, request, redirect, url_for, current_app, flash
+from flask import Flask, render_template, Blueprint, request, redirect, url_for, current_app, flash, session, abort
 from flask_login import login_user, current_user, logout_user, login_required
 
-from .forms import LoginForm, RegistrationForm, LoginForm
 from .utils import save_picture, send_reset_email
 from cloudbox import db, bcrypt
 from cloudbox.models import User
 
-
-
-users= Blueprint('users', __name__, static_folder= 'static',  static_url_path= '.static/assets/')
+users= Blueprint('users', __name__)
 
 
 @users.route('/signup', methods=['GET', 'POST'])
@@ -55,7 +52,6 @@ def signup():
 def signin():
 
     if current_user.is_authenticated:
-        print('redirectingggg')
         return redirect(url_for("main.home"))
     
     form= LoginForm()
@@ -70,7 +66,9 @@ def signin():
         else:
             flash(f"Login unsuccessful! Check email and password", "danger")
 
+
     return render_template('users/auth-sign-in.html', title= "Login", form=form)
+
 
 @users.route('/signout')
 def signout():
