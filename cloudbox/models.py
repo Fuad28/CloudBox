@@ -9,7 +9,7 @@ class User(sql_db.Model):
     last_name= sql_db.Column(sql_db.String(20), nullable=False)
     middle_name= sql_db.Column(sql_db.String(20))
     email= sql_db.Column(sql_db.String(120), unique=True,nullable=False)
-    password= sql_db.Column(sql_db.String(20), nullable=False)
+    password= sql_db.Column(sql_db.String(100), nullable=False)
     country= sql_db.Column(sql_db.String(20))
     phone= sql_db.Column(sql_db.String(20))
     date_of_birth= sql_db.Column(sql_db.DateTime, default=datetime.now())

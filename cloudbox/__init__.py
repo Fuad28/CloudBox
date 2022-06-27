@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+# from flask_restful import Api
 
 import os
 import cloudinary
@@ -15,6 +16,8 @@ nosql_db= MongoEngine()
 sql_db= SQLAlchemy()
 mail= Mail()
 bcrypt= Bcrypt()
+# api= Api()
+jwt_manager= JWTManager()
 
 
 
@@ -22,11 +25,13 @@ def create_app(config_class= Config):
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    JWTManager(app)
     nosql_db.init_app(app)
     sql_db.init_app(app)
     bcrypt.init_app(app)
-    JWTManager(app)
     mail.init_app(app)
+    jwt_manager.init_app(app)
+    # api.init_app(app)
 
     from cloudbox.core.routes import core
     from cloudbox.auth.routes import auth
