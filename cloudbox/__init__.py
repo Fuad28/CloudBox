@@ -1,17 +1,23 @@
 from flask import Flask
 from flask_mongoengine import MongoEngine
-from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
+
+import os
+import cloudinary
 
 from .config import Config
 
 
-db= MongoEngine()
-login_manager= LoginManager()
-login_manager.login_view= 'users.login'
+nosql_db= MongoEngine()
+sql_db= SQLAlchemy()
 mail= Mail()
 bcrypt= Bcrypt()
+migrate = Migrate()
+jwt_manager= JWTManager()
 
 
 
@@ -19,33 +25,24 @@ def create_app(config_class= Config):
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    db.init_app(app)
+    JWTManager(app)
+    nosql_db.init_app(app)
+    sql_db.init_app(app)
     bcrypt.init_app(app)
-    login_manager.init_app(app)
     mail.init_app(app)
+    jwt_manager.init_app(app)
+    migrate.init_app(app, sql_db)
+    from cloudbox.core.routes import core
+    from cloudbox.auth.routes import auth
 
-    from cloudbox.main.routes import main
-    from cloudbox.users.routes import users
-
-    app.register_blueprint(main, url_prefix= '/')
-    app.register_blueprint(users, url_prefix= '/users')
+    app.register_blueprint(core)
+    app.register_blueprint(auth)
 
     return app
 
-
-
-
-    # <div class="col-lg-12"></div>
-    #                           <div class="floating-label form-group">
-    #                              {% if form.country.errors %}
-    #                                 {{ form.country(class="floating-input form-control is-invalid", placeholder=" ", type="text") }}
-    #                                 <div class="invalid-feedback">
-    #                                    {% for error in form.country.errors %}
-    #                                        <span>{{ error }}</span>
-    #                                    {% endfor %}
-    #                                </div>
-    #                              {% else %}
-    #                                {{ form.country(class="floating-input form-control", placeholder=" ", type="text") }}
-    #                              {% endif %}
-    #                              <label>Country</label>
-    #                           </div>
+#set up cloudinary
+cloudinary.config( 
+  cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'), 
+  api_key = os.environ.get('CLOUDINARY_API_KEY'), 
+  api_secret = os.environ.get('CLOUDINARY_API_SECRET')
+)
