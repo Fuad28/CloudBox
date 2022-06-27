@@ -2,13 +2,13 @@ from flask import Flask, render_template, Blueprint, request, redirect, url_for,
 from flask_login import login_user, current_user, logout_user, login_required
 
 from .utils import save_picture, send_reset_email
-from cloudbox import db, bcrypt
+from cloudbox import sql_db, bcrypt
 from cloudbox.models import User
 
-users= Blueprint('users', __name__)
+auth= Blueprint('auth', __name__, url_prefix='/api/v1/auth/')
 
 
-@users.route('/signup', methods=['GET', 'POST'])
+@auth.route('/signup', methods=['GET', 'POST'])
 def signup():
     if current_user.is_authenticated:
         print(current_user.first_name)
@@ -43,12 +43,12 @@ def signup():
         user.save()
 
         flash(f"Your account has been created! You're now able to login", "success")
-        return  redirect(url_for("users.signin"))
+        return  redirect(url_for("auth.signin"))
 
-    return render_template('users/auth-sign-up.html', title= "Register", form=form)
+    return render_template('auth/auth-sign-up.html', title= "Register", form=form)
 
 
-@users.route("/signin", methods= ["POST", "GET"]) 
+@auth.route("/signin", methods= ["POST", "GET"]) 
 def signin():
 
     if current_user.is_authenticated:
@@ -67,10 +67,10 @@ def signin():
             flash(f"Login unsuccessful! Check email and password", "danger")
 
 
-    return render_template('users/auth-sign-in.html', title= "Login", form=form)
+    return render_template('auth/auth-sign-in.html', title= "Login", form=form)
 
 
-@users.route('/signout')
+@auth.route('/signout')
 def signout():
     logout_user()
     return  redirect(url_for("main.home"))
