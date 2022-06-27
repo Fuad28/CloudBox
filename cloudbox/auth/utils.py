@@ -5,6 +5,7 @@ from flask import url_for
 from flask_mail import Message
 from cloudbox import mail
 from flask import current_app
+import  validators
 
 def  save_picture(form_picture):
     random_hex= secrets.token_hex(8)
@@ -27,3 +28,13 @@ def send_reset_email(user):
     msg.body= f"""To reset your password, visit {url_for("reset_token", token=token, _external=True)}
 If you did not make this request, simply ignore this enail"""
     mail.send(msg)
+
+
+def email(email_str):
+    """Return email_str if valid, raise an exception in other case."""
+    if validators.email(email_str):
+        return email_str
+    else:
+        raise ValueError('{} is not a valid email'.format(email_str))
+
+#media upload service

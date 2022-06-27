@@ -1,15 +1,17 @@
 from cloudbox import sql_db, nosql_db
+
+from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import uuid
 
 class User(sql_db.Model):
     #personal
-    id = sql_db.Column(sql_db.String, primary_key=True, default=uuid.uuid4)
+    id = sql_db.Column(UUID(as_uuid=True), primary_key=True, default= uuid.uuid4)
     first_name= sql_db.Column(sql_db.String(20), nullable=False)
     last_name= sql_db.Column(sql_db.String(20), nullable=False)
     middle_name= sql_db.Column(sql_db.String(20))
     email= sql_db.Column(sql_db.String(120), unique=True,nullable=False)
-    password= sql_db.Column(sql_db.String(100), nullable=False)
+    password= sql_db.Column(sql_db.String(120), nullable=False)
     country= sql_db.Column(sql_db.String(20))
     phone= sql_db.Column(sql_db.String(20))
     date_of_birth= sql_db.Column(sql_db.DateTime, default=datetime.now())
