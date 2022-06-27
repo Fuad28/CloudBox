@@ -1,6 +1,6 @@
 from flask import Blueprint
 from flask_restful import Api
-from resources import Register, Login, Profile, TokenRefresh
+from .resources import Register, Login, Profile, TokenRefresh
 
 auth= Blueprint('auth', __name__, url_prefix='/api/v1/auth/')
 auth_api= Api(auth)
