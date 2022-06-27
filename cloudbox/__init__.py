@@ -5,6 +5,9 @@ from flask_mail import Mail
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 
+import os
+import cloudinary
+
 from .config import Config
 
 
@@ -32,3 +35,10 @@ def create_app(config_class= Config):
     app.register_blueprint(auth)
 
     return app
+
+#set up cloudinary
+cloudinary.config( 
+  cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'), 
+  api_key = os.environ.get('CLOUDINARY_API_KEY'), 
+  api_secret = os.environ.get('CLOUDINARY_API_SECRET')
+)

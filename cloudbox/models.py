@@ -2,7 +2,7 @@ from cloudbox import sql_db, nosql_db
 from datetime import datetime
 import uuid
 
-class User(sql_db):
+class User(sql_db.Model):
     #personal
     id = sql_db.Column(sql_db.String, primary_key=True, default=uuid.uuid4)
     first_name= sql_db.Column(sql_db.String(20), nullable=False)
@@ -30,12 +30,12 @@ class User(sql_db):
 
 
 class BaseAsset(nosql_db.Document):
-    user_id= nosql_db.UUIDField(binary= False, required=True)
+    user_id= nosql_db.StringField(binary= False, required=True)
     is_folder= nosql_db.BooleanField(required= True)
-    parent= nosql_db.UUIDField(required=True)
+    parent= nosql_db.StringField(binary= False, required=True)
     name= nosql_db.StringField(max_length=255, required= True)
-    created_at = nosql_db.DateTime(required=True, default=datetime.now)
-    updated_at = nosql_db.DateTime(required=True, default=datetime.now)
+    created_at = nosql_db.DateTimeField(required=True, default=datetime.now)
+    updated_at = nosql_db.DateTimeField(required=True, default=datetime.now)
 
     def save(self, force_insert=False, validate=True, clean=True, write_concern=None, cascade=None, cascade_kwargs=None,_refs=None, save_condition=None, signal_kwargs=None, **kwargs):
         self.updated_at = datetime.datetime.now()
