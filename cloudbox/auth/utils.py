@@ -1,24 +1,14 @@
-import os
-import secrets
+from flask_mail import Message
+# from flask import current_app
+
+import  validators
+import cloudinary
 from PIL import Image
 from flask import url_for
-from flask_mail import Message
+
 from cloudbox import mail
-from flask import current_app
-import  validators
+from cloudbox.models import User
 
-def  save_picture(form_picture):
-    random_hex= secrets.token_hex(8)
-    _, f_ext= os.path.splitext(form_picture.filename)
-    picture_fn= random_hex+f_ext
-    picture_path= os.path.join(current_app.root_path, "static/profile_pics", picture_fn)
-
-    output_size = (125, 125)
-    i = Image.open(form_picture)
-    i.thumbnail(output_size)
-    i.save(picture_path)
-
-    return picture_fn
 
 def send_reset_email(user):
     token= user.get_reset_token()
@@ -34,7 +24,19 @@ def email(email_str):
     """Return email_str if valid, raise an exception in other case."""
     if validators.email(email_str):
         return email_str
+        
+    elif len(User.query.filter(email= email_str)) > 0:
+        raise ValueError(f'Email {email_str} exists already')
     else:
-        raise ValueError('{} is not a valid email'.format(email_str))
+        raise ValueError(f'{email_str} is not a valid email')
 
-#media upload service
+
+def save_picture(form_picture):
+    """reduce profile picture sizes"""
+    output_size = (125, 125)
+    return Image.open(form_picture).thumbnail(output_size)
+
+
+def upload_media(media):
+    """Upload media to cloudinary"""
+    return cloudinary.uploader.upload(media)
