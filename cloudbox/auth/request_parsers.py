@@ -24,3 +24,11 @@ register_args.add_argument("recovery_no", type=str)
 login_args= reqparse.RequestParser()
 login_args.add_argument("email", type=email, help="email name of the user is required", required=True)
 login_args.add_argument("password", type=str, help="password is required", required=True)
+
+forgot_password_args= reqparse.RequestParser()
+forgot_password_args.add_argument("email", type=email, help="email name of the user is required", required=True)
+
+reset_password_args= reqparse.RequestParser()
+reset_password_args.add_argument("password", type=str, help="new password is required", required=True)
+
+

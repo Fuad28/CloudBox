@@ -4,27 +4,14 @@ from flask_mail import Message
 import  validators
 import cloudinary
 from PIL import Image
-from flask import url_for
-
-from cloudbox import mail
 from cloudbox.models import User
-
-
-def send_reset_email(user):
-    token= user.get_reset_token()
-    msg= Message(
-        "Password reset request", 
-        recipients= [user.email])
-    msg.body= f"""To reset your password, visit {url_for("reset_token", token=token, _external=True)}
-If you did not make this request, simply ignore this enail"""
-    mail.send(msg)
 
 
 def email(email_str):
     """Return email_str if valid, raise an exception in other case."""
     if validators.email(email_str):
         return email_str
-        
+
     elif len(User.query.filter(email= email_str)) > 0:
         raise ValueError(f'Email {email_str} exists already')
     else:
