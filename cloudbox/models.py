@@ -55,9 +55,15 @@ class FileAsset(BaseAsset):
     def get_size(self):
         pass
 
+    def __repr__(self):
+        return f"File('{self.name}')"
+
 class FolderAsset(BaseAsset):
     def get_uri(self):
         return f"{self.domain}/folder/{self._id}"
+
+    def __repr__(self):
+        return f"Folder('{self.name}')"
 
 
 

@@ -1,4 +1,4 @@
-from flask import request, render_template, current_app
+from flask import request, render_template
 
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, decode_token
 from flask_restful import Resource,  marshal_with 
@@ -8,10 +8,12 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import datetime
 
 from cloudbox import sql_db
-from cloudbox.constants.http_status_codes import *
+from cloudbox.http_status_codes import *
 from cloudbox.models import User
-from cloudbox.services.mail_service import send_email
+
+from services.mailer import send_email
 from services.upload import upload_profile_picture
+
 from .fields import register_fields, login_fields, profile_fields, token_ref_fields
 from .request_parsers import register_args,  login_args, forgot_password_args, reset_password_args
 

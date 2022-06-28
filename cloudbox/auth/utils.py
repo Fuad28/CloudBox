@@ -1,9 +1,6 @@
-from flask_mail import Message
-# from flask import current_app
+"""Blueprint specific helper functions. Global helper functions can be found in services"""
 
 import  validators
-import cloudinary
-from PIL import Image
 from cloudbox.models import User
 
 
@@ -16,14 +13,3 @@ def email(email_str):
         raise ValueError(f'Email {email_str} exists already')
     else:
         raise ValueError(f'{email_str} is not a valid email')
-
-
-def save_picture(form_picture):
-    """reduce profile picture sizes"""
-    output_size = (125, 125)
-    return Image.open(form_picture).thumbnail(output_size)
-
-
-def upload_media(media):
-    """Upload media to cloudinary"""
-    return cloudinary.uploader.upload(media)
