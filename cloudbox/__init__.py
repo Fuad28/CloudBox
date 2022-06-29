@@ -9,23 +9,26 @@ from flask_migrate import Migrate
 
 import os
 import cloudinary
+from dotenv import load_dotenv
+from celery import Celery
 
 from .config import Config
 
+load_dotenv()
 
-nosql_db= MongoEngine()
 sql_db= SQLAlchemy()
-# mail= Mail()
+nosql_db= MongoEngine()
 mail= MailSendGrid()
 bcrypt= Bcrypt()
 migrate = Migrate()
 jwt_manager= JWTManager()
 
-
+celery = Celery(__name__, broker= Config.CELERY_BROKER_URL)
 
 def create_app(config_class= Config):
     app = Flask(__name__)
     app.config.from_object(Config)
+    celery.conf.update(app.config)
 
     JWTManager(app)
     nosql_db.init_app(app)
@@ -34,6 +37,7 @@ def create_app(config_class= Config):
     mail.init_app(app)
     jwt_manager.init_app(app)
     migrate.init_app(app, sql_db)
+
     from cloudbox.core.routes import core
     from cloudbox.auth.routes import auth
 

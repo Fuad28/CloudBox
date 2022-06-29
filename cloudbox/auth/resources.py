@@ -11,8 +11,8 @@ from cloudbox import sql_db
 from cloudbox.http_status_codes import *
 from cloudbox.models import User
 
-from services.mailer import send_email
-from services.upload import upload_profile_picture
+from ..services.mailer import send_email
+from ..services.upload import upload_profile_picture
 
 from .fields import register_fields, login_fields, profile_fields, token_ref_fields
 from .request_parsers import register_args,  login_args, forgot_password_args, reset_password_args
@@ -23,11 +23,13 @@ class Register(Resource):
         args= register_args.parse_args(strict=True)
         password_hash= generate_password_hash(args['password'])
         args.pop('password', None)
+        profile_pict=  args["profile_pict"]
+        args.pop('profile_pict', None)
         user= User(password=password_hash, **args) 
         sql_db.session.add(user)
         sql_db.session.commit()
-
-        cloud_url= upload_profile_picture(media= args["profile_pict"], user_id= user.id)
+        print(profile_pict)
+        cloud_url= upload_profile_picture.delay(media= profile_pict, user_id= user.id)
         return user, HTTP_201_CREATED
 
 class Login(Resource):
@@ -86,7 +88,7 @@ class RequestResetPassword(Resource):
   
         url= f"{request.host_url}reset-password/{reset_token}"
         #send password request reset  mail
-        send_email(
+        send_email.delay(
             subject= 'Reset Your Password',
             recipients=[user.email],
             text_body=render_template('email/reset_password.txt', url= url),
@@ -106,7 +108,7 @@ class ResetPassword(Resource):
         sql_db.session.commit()
 
         #send success mail
-        send_email(
+        send_email.delay(
             subject= 'Password reset successful',
             recipients=[user.email],
             text_body='Password reset was successful',

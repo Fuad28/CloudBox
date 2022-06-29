@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 class Config:
     #dbs
     MONGODB_HOST = os.environ.get('CLOUDBOX_NOSQL_DB_URI')
