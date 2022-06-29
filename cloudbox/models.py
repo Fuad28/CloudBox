@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import uuid
 
+
 class User(sql_db.Model):
     #personal
     id = sql_db.Column(UUID(as_uuid=True), primary_key=True, default= uuid.uuid4)
@@ -15,7 +16,7 @@ class User(sql_db.Model):
     country= sql_db.Column(sql_db.String(20))
     phone= sql_db.Column(sql_db.String(20))
     date_of_birth= sql_db.Column(sql_db.DateTime, default=datetime.now())
-    profile_pict= sql_db.Column(sql_db.String(20), default= "default.jpg")
+    profile_pict= sql_db.Column(sql_db.String(255), default= "default.jpg")
     #security question
     security_quest= sql_db.Column(sql_db.String(20))
     security_ans= sql_db.Column(sql_db.String(20))
@@ -55,32 +56,12 @@ class FileAsset(BaseAsset):
     def get_size(self):
         pass
 
+    def __repr__(self):
+        return f"File('{self.name}')"
+
 class FolderAsset(BaseAsset):
     def get_uri(self):
         return f"{self.domain}/folder/{self._id}"
 
-
-
-
-
-
-
-
-
-
-
-
-
-#  def get_reset_token(self):
-#         s= serializer(current_app.config["FLASK_SECRET_KEY"])
-#         return s.dumps({"user_id": self.id})
-
-#     @staticmethod
-#     def verify_reset_token(token, expires_sec= 1800):
-#         s= serializer(current_app.config["FLASK_SECRET_KEY"])
-#         try:
-#             user_id= s.loads(token, expires_sec)["user_id"]
-#         except:
-#             return None
-#         return User.objects.get(user_id)
-
+    def __repr__(self):
+        return f"Folder('{self.name}')"
