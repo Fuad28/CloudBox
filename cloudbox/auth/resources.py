@@ -1,11 +1,11 @@
 from flask import request, render_template
-
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, decode_token
 from flask_restful import Resource,  marshal_with 
 
 from werkzeug.security import check_password_hash, generate_password_hash
-
 import datetime
+import base64
+from io import BytesIO
 
 from cloudbox import sql_db
 from cloudbox.http_status_codes import *
@@ -21,15 +21,19 @@ class Register(Resource):
     @marshal_with(register_fields)
     def post(self):
         args= register_args.parse_args(strict=True)
+
         password_hash= generate_password_hash(args['password'])
         args.pop('password', None)
-        profile_pict=  args["profile_pict"]
+
+        encoded_img= base64.b64encode(args["profile_pict"].read())
+        bytesio_img= BytesIO(base64.b64decode(encoded_img))
         args.pop('profile_pict', None)
+
         user= User(password=password_hash, **args) 
         sql_db.session.add(user)
         sql_db.session.commit()
-        print(profile_pict)
-        cloud_url= upload_profile_picture.delay(media= profile_pict, user_id= user.id)
+
+        upload_profile_picture.delay(media= bytesio_img, user_id= user.id)
         return user, HTTP_201_CREATED
 
 class Login(Resource):

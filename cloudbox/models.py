@@ -16,7 +16,7 @@ class User(sql_db.Model):
     country= sql_db.Column(sql_db.String(20))
     phone= sql_db.Column(sql_db.String(20))
     date_of_birth= sql_db.Column(sql_db.DateTime, default=datetime.now())
-    profile_pict= sql_db.Column(sql_db.String(20), default= "default.jpg")
+    profile_pict= sql_db.Column(sql_db.String(255), default= "default.jpg")
     #security question
     security_quest= sql_db.Column(sql_db.String(20))
     security_ans= sql_db.Column(sql_db.String(20))
