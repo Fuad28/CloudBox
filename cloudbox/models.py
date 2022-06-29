@@ -65,29 +65,3 @@ class FolderAsset(BaseAsset):
 
     def __repr__(self):
         return f"Folder('{self.name}')"
-
-
-
-
-
-
-
-
-
-
-
-
-
-#  def get_reset_token(self):
-#         s= serializer(current_app.config["FLASK_SECRET_KEY"])
-#         return s.dumps({"user_id": self.id})
-
-#     @staticmethod
-#     def verify_reset_token(token, expires_sec= 1800):
-#         s= serializer(current_app.config["FLASK_SECRET_KEY"])
-#         try:
-#             user_id= s.loads(token, expires_sec)["user_id"]
-#         except:
-#             return None
-#         return User.objects.get(user_id)
-
