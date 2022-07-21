@@ -3,7 +3,13 @@ from cloudbox import sql_db, nosql_db
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import uuid
+import enum
 
+class SubscriptionPlanEnum(enum.Enum):
+    free = 'free'
+    basic = 'basic'
+    standard = 'standard'
+    premium = 'premium'
 
 class User(sql_db.Model):
     #personal
@@ -27,6 +33,10 @@ class User(sql_db.Model):
     created_at = sql_db.Column(sql_db.DateTime, default=datetime.now())
     updated_at = sql_db.Column(sql_db.DateTime, onupdate=datetime.now(), default=datetime.now())
 
+    subscription_plan= sql_db.Column(
+        sql_db.Enum(SubscriptionPlanEnum), default=SubscriptionPlanEnum.free, nullable=False
+        )
+
 
     def __repr__(self):
         return f"User('{self.first_name}',  '{self.id}')"
@@ -34,14 +44,15 @@ class User(sql_db.Model):
 
 class BaseAsset(nosql_db.Document):
     user_id= nosql_db.StringField(binary= False, required=True)
-    is_folder= nosql_db.BooleanField(required= True)
+    # user_id= nosql_db.UUIDField(required=True)
+    is_folder= nosql_db.BooleanField(required= True, default= False)
     parent= nosql_db.StringField(binary= False, required=True)
     name= nosql_db.StringField(max_length=255, required= True)
     created_at = nosql_db.DateTimeField(required=True, default=datetime.now)
     updated_at = nosql_db.DateTimeField(required=True, default=datetime.now)
 
     def save(self, force_insert=False, validate=True, clean=True, write_concern=None, cascade=None, cascade_kwargs=None,_refs=None, save_condition=None, signal_kwargs=None, **kwargs):
-        self.updated_at = datetime.datetime.now()
+        self.updated_at = datetime.now()
         super().save(force_insert, validate, clean, write_concern, cascade, cascade_kwargs, _refs, save_condition,signal_kwargs, **kwargs)
 
     meta = {'allow_inheritance': True}
@@ -60,6 +71,7 @@ class FileAsset(BaseAsset):
         return f"File('{self.name}')"
 
 class FolderAsset(BaseAsset):
+    is_folder= nosql_db.BooleanField(required= True, default= True)
     def get_uri(self):
         return f"{self.domain}/folder/{self._id}"
 

@@ -1,4 +1,4 @@
-from flask import request, render_template
+from flask import request, render_template, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, decode_token
 from flask_restful import Resource,  marshal_with 
 
@@ -16,6 +16,7 @@ from ..services.upload import upload_profile_picture
 
 from .fields import register_fields, login_fields, profile_fields, token_ref_fields
 from .request_parsers import register_args,  login_args, forgot_password_args, reset_password_args
+from .signals import user_registered
 
 class Register(Resource):
     @marshal_with(register_fields)
@@ -32,6 +33,10 @@ class Register(Resource):
         user= User(password=password_hash, **args) 
         sql_db.session.add(user)
         sql_db.session.commit()
+
+        #send signal
+        user_registered.send(current_app._get_current_object(), user= user)
+
 
         upload_profile_picture.delay(media= bytesio_img, user_id= user.id)
         return user, HTTP_201_CREATED
