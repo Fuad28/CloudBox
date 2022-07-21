@@ -3,6 +3,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, jwt_re
 from flask_restful import Resource,  marshal_with 
 
 from werkzeug.security import check_password_hash, generate_password_hash
+import os
 import datetime
 import base64
 from io import BytesIO
@@ -26,9 +27,15 @@ class Register(Resource):
         password_hash= generate_password_hash(args['password'])
         args.pop('password', None)
 
-        encoded_img= base64.b64encode(args["profile_pict"].read())
-        bytesio_img= BytesIO(base64.b64decode(encoded_img))
-        args.pop('profile_pict', None)
+        if args.get('profile_pict') is not None:
+            #upload profile picture to cloudinary
+            encoded_img= base64.b64encode(args["profile_pict"].read())
+            bytesio_img= BytesIO(base64.b64decode(encoded_img))
+            upload_profile_picture.delay(media= bytesio_img, user_id= user.id)
+            args.pop('profile_pict', None)
+
+        #set the profile picture to the default pending  thhe time image is uploaded or even if profile picture wasn't sent
+        args['profile_pict']= os.getenv("DEFAULT_PROFILE_PICTURE")
 
         user= User(password=password_hash, **args) 
         sql_db.session.add(user)
@@ -37,8 +44,8 @@ class Register(Resource):
         #send signal
         user_registered.send(current_app._get_current_object(), user= user)
 
+       
 
-        upload_profile_picture.delay(media= bytesio_img, user_id= user.id)
         return user, HTTP_201_CREATED
 
 class Login(Resource):
