@@ -1,17 +1,13 @@
 from flask import Blueprint
 from flask_restful import Api
-from .resources import Register, Login, Profile, TokenRefresh, RequestResetPassword, ResetPassword
+from .resources import Folder, File
 
 store= Blueprint('store', __name__, url_prefix='/api/v1/store/')
 store_api= Api(store)
 
 
-store_api.add_resource(Register, "/register")
-store_api.add_resource(Login, "/login")
-store_api.add_resource(Profile, "/profile")
-store_api.add_resource(TokenRefresh, "/token/refresh")
-store_api.add_resource(RequestResetPassword, "/request-password-reset")
-store_api.add_resource(ResetPassword, "/reset-password")
+store_api.add_resource(Folder, "/folder", "/folder/<string:id>")
+store_api.add_resource(File, "/file/<string:id>")
 
 
 """

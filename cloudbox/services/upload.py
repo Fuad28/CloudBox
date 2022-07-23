@@ -26,7 +26,7 @@ def save_picture(media):
 def upload_profile_picture(media, user_id):
     """Upload media to cloudinary"""
 
-    cloud_url= cloudinary.uploader.upload(media)
+    cloud_url= cloudinary.uploader.upload(media, folder= "profile")
     user= User.query.get(user_id)
     user.profile_pict= cloud_url.get("url")
     sql_db.session.commit()

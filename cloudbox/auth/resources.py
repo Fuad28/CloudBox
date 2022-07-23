@@ -27,14 +27,13 @@ class Register(Resource):
         password_hash= generate_password_hash(args['password'])
         args.pop('password', None)
 
+        USER_ADDED_PROFILE_PICTURE= False
         if args.get('profile_pict') is not None:
-            #upload profile picture to cloudinary
+            USER_ADDED_PROFILE_PICTURE= True
             encoded_img= base64.b64encode(args["profile_pict"].read())
             bytesio_img= BytesIO(base64.b64decode(encoded_img))
-            upload_profile_picture.delay(media= bytesio_img, user_id= user.id)
-            args.pop('profile_pict', None)
-
-        #set the profile picture to the default pending  thhe time image is uploaded or even if profile picture wasn't sent
+            
+        #set the profile picture to the default pending the time image is uploaded or even if profile picture wasn't sent
         args['profile_pict']= os.getenv("DEFAULT_PROFILE_PICTURE")
 
         user= User(password=password_hash, **args) 
@@ -43,6 +42,10 @@ class Register(Resource):
 
         #send signal
         user_registered.send(current_app._get_current_object(), user= user)
+
+        #upload profile picture to cloudinary if any
+        if USER_ADDED_PROFILE_PICTURE:
+            upload_profile_picture.delay(media= bytesio_img, user_id= user.id)
 
        
 

@@ -37,6 +37,17 @@ class User(sql_db.Model):
         sql_db.Enum(SubscriptionPlanEnum), default=SubscriptionPlanEnum.free, nullable=False
         )
 
+    def max_storage_size(self):
+        one_mb= 1024
+        sizes= {
+            "free": one_mb * 100,
+            "basic": one_mb * 1000,
+            "standard": one_mb * 5000,
+            "premium": one_mb * 10000
+            }
+
+        return sizes[self.subscription_plan] + sizes["free"]
+        
 
     def __repr__(self):
         return f"User('{self.first_name}',  '{self.id}')"
@@ -60,20 +71,22 @@ class BaseAsset(nosql_db.Document):
 class FileAsset(BaseAsset):
     file_type= nosql_db.StringField(required= True)
     storage_link= nosql_db.URLField(required= False)
+    size= nosql_db.FloatField(required= False)
 
     def get_uri(self):
         return f"{self.domain}/file/{self._id}"
-
-    def get_size(self):
-        pass
 
     def __repr__(self):
         return f"File('{self.name}')"
 
 class FolderAsset(BaseAsset):
     is_folder= nosql_db.BooleanField(required= True, default= True)
+
     def get_uri(self):
         return f"{self.domain}/folder/{self._id}"
+    
+    def get_size(self):
+        pass
 
     def __repr__(self):
         return f"Folder('{self.name}')"

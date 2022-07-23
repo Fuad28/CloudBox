@@ -34,9 +34,11 @@ def create_app(config_class= Config):
 
     from cloudbox.core.routes import core
     from cloudbox.auth.routes import auth
+    from cloudbox.store.routes import store
 
     app.register_blueprint(core)
     app.register_blueprint(auth)
+    app.register_blueprint(store)
 
     return app
 
