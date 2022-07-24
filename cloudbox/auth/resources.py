@@ -65,7 +65,7 @@ class Login(Resource):
 
             if check_pass:
                 refresh= create_refresh_token(identity= user.id)
-                access= create_access_token(identity= user.id)
+                access= create_access_token(identity= user.id, expires_delta= datetime.timedelta(hours=24))
                 
                 return {'refresh': refresh, 'access': access}, HTTP_200_OK
 

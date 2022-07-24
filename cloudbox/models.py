@@ -2,9 +2,12 @@ from cloudbox import sql_db, nosql_db
 
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
+from dotenv import load_dotenv
+import os
 import uuid
 import enum
 
+load_dotenv()
 class SubscriptionPlanEnum(enum.Enum):
     free = 'free'
     basic = 'basic'
@@ -55,16 +58,17 @@ class User(sql_db.Model):
 
 class BaseAsset(nosql_db.Document):
     user_id= nosql_db.StringField(binary= False, required=True)
-    # user_id= nosql_db.UUIDField(required=True)
     is_folder= nosql_db.BooleanField(required= True, default= False)
-    parent= nosql_db.StringField(binary= False, required=True)
+    parent= nosql_db.ReferenceField("BaseAsset", reverse_delete_rule= nosql_db.CASCADE)
+    uri= nosql_db.StringField()
     name= nosql_db.StringField(max_length=255, required= True)
     created_at = nosql_db.DateTimeField(required=True, default=datetime.now)
     updated_at = nosql_db.DateTimeField(required=True, default=datetime.now)
+    # parent= nosql_db.StringField(binary= False, required=True)
 
-    def save(self, force_insert=False, validate=True, clean=True, write_concern=None, cascade=None, cascade_kwargs=None,_refs=None, save_condition=None, signal_kwargs=None, **kwargs):
+    def save(self, *args, **kwargs):
         self.updated_at = datetime.now()
-        super().save(force_insert, validate, clean, write_concern, cascade, cascade_kwargs, _refs, save_condition,signal_kwargs, **kwargs)
+        super().save(*args, **kwargs)
 
     meta = {'allow_inheritance': True}
 
@@ -74,19 +78,22 @@ class FileAsset(BaseAsset):
     size= nosql_db.FloatField(required= False)
 
     def get_uri(self):
-        return f"{self.domain}/file/{self._id}"
+        return f"{os.getenv('DOMAIN')}/api/v1/file/{self.id}"
 
     def __repr__(self):
         return f"File('{self.name}')"
 
+
 class FolderAsset(BaseAsset):
     is_folder= nosql_db.BooleanField(required= True, default= True)
-
-    def get_uri(self):
-        return f"{self.domain}/folder/{self._id}"
     
     def get_size(self):
         pass
 
+    def get_uri(self):
+        return f"{os.getenv('DOMAIN')}/api/v1/folder/{self.id}"
+
     def __repr__(self):
         return f"Folder('{self.name}')"
+
+
