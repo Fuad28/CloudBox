@@ -1,8 +1,9 @@
-from flask import request, render_template
+from flask import request, render_template, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, decode_token
 from flask_restful import Resource,  marshal_with 
 
 from werkzeug.security import check_password_hash, generate_password_hash
+import os
 import datetime
 import base64
 from io import BytesIO
@@ -16,6 +17,7 @@ from ..services.upload import upload_profile_picture
 
 from .fields import register_fields, login_fields, profile_fields, token_ref_fields
 from .request_parsers import register_args,  login_args, forgot_password_args, reset_password_args
+from .signals import user_registered
 
 class Register(Resource):
     @marshal_with(register_fields)
@@ -25,15 +27,28 @@ class Register(Resource):
         password_hash= generate_password_hash(args['password'])
         args.pop('password', None)
 
-        encoded_img= base64.b64encode(args["profile_pict"].read())
-        bytesio_img= BytesIO(base64.b64decode(encoded_img))
-        args.pop('profile_pict', None)
+        USER_ADDED_PROFILE_PICTURE= False
+        if args.get('profile_pict') is not None:
+            USER_ADDED_PROFILE_PICTURE= True
+            encoded_img= base64.b64encode(args["profile_pict"].read())
+            bytesio_img= BytesIO(base64.b64decode(encoded_img))
+            
+        #set the profile picture to the default pending the time image is uploaded or even if profile picture wasn't sent
+        args['profile_pict']= os.getenv("DEFAULT_PROFILE_PICTURE")
 
         user= User(password=password_hash, **args) 
         sql_db.session.add(user)
         sql_db.session.commit()
 
-        upload_profile_picture.delay(media= bytesio_img, user_id= user.id)
+        #send signal
+        user_registered.send(current_app._get_current_object(), user= user)
+
+        #upload profile picture to cloudinary if any
+        if USER_ADDED_PROFILE_PICTURE:
+            upload_profile_picture.delay(media= bytesio_img, user_id= user.id)
+
+       
+
         return user, HTTP_201_CREATED
 
 class Login(Resource):
@@ -50,7 +65,7 @@ class Login(Resource):
 
             if check_pass:
                 refresh= create_refresh_token(identity= user.id)
-                access= create_access_token(identity= user.id)
+                access= create_access_token(identity= user.id, expires_delta= datetime.timedelta(hours=24))
                 
                 return {'refresh': refresh, 'access': access}, HTTP_200_OK
 
