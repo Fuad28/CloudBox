@@ -58,6 +58,7 @@ class User(sql_db.Model):
 
 class BaseAsset(nosql_db.Document):
     user_id= nosql_db.StringField(binary= False, required=True)
+    editors= nosql_db.ListField()
     is_folder= nosql_db.BooleanField(required= True, default= False)
     parent= nosql_db.ReferenceField("BaseAsset", reverse_delete_rule= nosql_db.CASCADE)
     uri= nosql_db.StringField()
