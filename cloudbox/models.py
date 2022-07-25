@@ -14,6 +14,11 @@ class SubscriptionPlanEnum(enum.Enum):
     standard = 'standard'
     premium = 'premium'
 
+class AnyoneCanAcessEnum(enum.Enum):
+    restricted = 'restricted'
+    viewer = 'viewer'
+    editor = 'editor'
+
 class User(sql_db.Model):
     #personal
     id = sql_db.Column(UUID(as_uuid=True), primary_key=True, default= uuid.uuid4)
@@ -59,6 +64,7 @@ class User(sql_db.Model):
 class BaseAsset(nosql_db.Document):
     user_id= nosql_db.StringField(binary= False, required=True)
     editors= nosql_db.ListField()
+    anyone_can_access= nosql_db.EnumField(AnyoneCanAcessEnum, default=AnyoneCanAcessEnum.restricted)
     is_folder= nosql_db.BooleanField(required= True, default= False)
     parent= nosql_db.ReferenceField("BaseAsset", reverse_delete_rule= nosql_db.CASCADE)
     uri= nosql_db.StringField()
