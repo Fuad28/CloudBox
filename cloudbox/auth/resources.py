@@ -14,7 +14,6 @@ from cloudbox.models import User
 
 from ..services.mailer import send_email
 from ..services.upload import upload_profile_picture
-from ..services.upload_utils import process_file_to_stream
 
 from .fields import register_fields, login_fields, profile_fields, token_ref_fields
 from .request_parsers import register_args,  login_args, forgot_password_args, reset_password_args
@@ -31,9 +30,8 @@ class Register(Resource):
         USER_ADDED_PROFILE_PICTURE= False
         if args.get('profile_pict') is not None:
             USER_ADDED_PROFILE_PICTURE= True
-            # encoded_img= base64.b64encode(args["profile_pict"].read())
-            # bytesio_img= BytesIO(base64.b64decode(encoded_img))
-            data= process_file_to_stream(args["profile_pict"], to_utf8= True)
+            encoded_img= base64.b64encode(args["profile_pict"].read())
+            image_bytes= BytesIO(base64.b64decode(encoded_img))
             
         #set the profile picture to the default pending the time image is uploaded or even if profile picture wasn't sent
         args['profile_pict']= os.getenv("DEFAULT_PROFILE_PICTURE")
@@ -42,14 +40,13 @@ class Register(Resource):
         sql_db.session.add(user)
         sql_db.session.commit()
 
-        #send signal
+        # send signal
         user_registered.send(current_app._get_current_object(), user= user)
-
+    
         #upload profile picture to cloudinary if any
         if USER_ADDED_PROFILE_PICTURE:
-            upload_profile_picture.delay(media= data, user_id= user.id)
+            upload_profile_picture.delay(image_bytes= image_bytes, user_id= user.id)
 
-       
 
         return user, HTTP_201_CREATED
 

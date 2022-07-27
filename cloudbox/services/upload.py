@@ -28,10 +28,10 @@ s3 = boto3.client(
 
 
 @celery.task
-def upload_profile_picture(data: dict, user_id):
+def upload_profile_picture(image_bytes, user_id):
     """Upload data: dict to cloudinary"""
-    image= process_stream_to_file(data)
-    cloud_url= cloudinary.uploader.upload(image, folder= "profile")
+
+    cloud_url= cloudinary.uploader.upload(image_bytes, folder= "profile")
     user= User.query.get(user_id)
     user.profile_pict= cloud_url.get("url")
     sql_db.session.commit()

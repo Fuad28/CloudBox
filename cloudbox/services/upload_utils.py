@@ -1,7 +1,7 @@
 import io
 import os
 import base64
-import datetime
+from datetime import datetime
 from PIL import Image
 
 import boto3
@@ -9,10 +9,10 @@ from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 
 
-def save_picture(media):
+def resize_picture(media):
     """reduce profile picture sizes"""
-    output_size = (125, 125)
-    return Image.open(media).thumbnail(output_size)
+    output_size = (512, 512)
+    return Image.open(media).resize(output_size)
 
 
 def rename_file(filename: str):
