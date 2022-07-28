@@ -46,15 +46,15 @@ class User(sql_db.Model):
         )
 
     def max_storage_size(self):
-        one_mb= 1024
+        hundred_mb= 1024 * 1024 * 100 
         sizes= {
-            "free": one_mb * 100,
-            "basic": one_mb * 1000,
-            "standard": one_mb * 5000,
-            "premium": one_mb * 10000
+            "free": hundred_mb,
+            "basic": hundred_mb * 10,
+            "standard": hundred_mb * 50,
+            "premium": hundred_mb * 100
             }
 
-        return sizes[self.subscription_plan] + sizes["free"]
+        return sizes[str(self.subscription_plan.name)]
         
 
     def __repr__(self):
@@ -86,7 +86,7 @@ class FileAsset(BaseAsset):
     size= nosql_db.FloatField(required= False)
 
     def get_uri(self):
-        return f"{os.getenv('DOMAIN')}/api/v1/file/{self.id}"
+        return f"{os.getenv('DOMAIN')}/api/v1/files/{self.id}"
 
     def __repr__(self):
         return f"File('{self.name}')"
@@ -94,12 +94,28 @@ class FileAsset(BaseAsset):
 
 class FolderAsset(BaseAsset):
     is_folder= nosql_db.BooleanField(required= True, default= True)
-    
-    def get_size(self):
-        pass
 
     def get_uri(self):
-        return f"{os.getenv('DOMAIN')}/api/v1/folder/{self.id}"
+        return f"{os.getenv('DOMAIN')}/api/v1/folders/{self.id}"
+ 
+    # def get_size(self):
+    #     return "helllooo"
+
+    # def to_dict(self):
+
+    #     init_dict= self.to_mongo().to_dict()
+
+    #     # print(init_dict["_cls"].split("."))
+
+    #     init_dict["uri"]= self.get_uri()
+    #     init_dict["id"]= str(self.id)
+    #     init_dict["created_at"]= str(self.created_at)
+    #     init_dict["updated_at"]= str(self.updated_at)
+    #     init_dict["size"]= self.get_size()
+    #     init_dict.pop("_id")
+    #     init_dict.pop("_cls")
+
+    #     return init_dict
 
     def __repr__(self):
         return f"Folder('{self.name}')"

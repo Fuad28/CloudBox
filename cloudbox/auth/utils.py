@@ -5,7 +5,6 @@ from cloudbox.models import User
 
 
 def email(email_str):
-    print(email_str)
     """Return email_str if valid, raise an exception in other case."""
     if validators.email(email_str):
         return email_str
