@@ -14,12 +14,13 @@ POST PATCH DELETE
     b. editors
 
 """
-from ..models import BaseAsset
+from ..models import BaseAsset, FileAsset, User
 
 def _user_is_logged_in(user_id: str):
     """used in permissions where user log in is necessary"""
     if user_id is None:
         return False
+        
 
 def unrestricted_R(asset: BaseAsset, user_id: str= None) -> bool:
     """ unrestricted GET"""
@@ -56,5 +57,19 @@ def restricted_to_owner_viewers_editors_general_CUD(asset: BaseAsset, user_id: s
     _user_is_logged_in(user_id)
 
     if (user_id== asset.user_id) | (asset.anyone_can_access == 'editor') | (user_id in asset.editors):
+        return True
+    return False
+
+
+def user_has_storage_space(user_id: str, asset_size: int):
+    """Check if a user has storage space for asset being uploaded"""
+    user_max_storage= User.query.get(user_id).max_storage_size
+    user_used_storage= FileAsset.objects.filter(user_id= user_id).only('size').sum('size')
+
+    print(asset_size)
+    print(user_max_storage)
+    print(user_used_storage)
+
+    if (user_max_storage - user_used_storage) > asset_size:
         return True
     return False

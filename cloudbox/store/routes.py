@@ -8,7 +8,9 @@ store_api= Api(store)
 
 store_api.add_resource(Folder, "/folders/", "/folders/<string:id>/")
 store_api.add_resource(FolderContent, "/folders/content/", "/folders/<string:id>/content/")
-store_api.add_resource(File, "/file/<string:id>/")
+# store_api.add_resource(FolderEditors, "/folders/editors/", "/folders/<string:id>/editors/")
+# store_api.add_resource(FolderViewers, "/folders/viewers/", "/folders/<string:id>/viewers/")
+store_api.add_resource(File, "/files/<string:id>/")
 
 
 """

@@ -80,3 +80,10 @@ def is_client_error():
 def is_server_error():
     # 5xx
     pass
+
+##### error messages
+INVALID_ID_ERROR= {"error": "Enter a valid ID"}
+NOT_ALLOWED_TO_VIEW_ERROR= {"error": "You're not allowed to view, request access"}
+NOT_ALLOWED_TO_PERFORM_ACTION_ERROR= {"error": "You're not allowed to perform this action, request access"}
+NOT_ENOUGH_SPACE_ERROR= {"error": "You're do not have enough space to upload this asset"}
+ASSET_DELETED_SUCCESS= {"success": "asset deleted"}
