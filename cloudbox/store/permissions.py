@@ -66,10 +66,6 @@ def user_has_storage_space(user_id: str, asset_size: int):
     user_max_storage= User.query.get(user_id).max_storage_size()
     user_used_storage= FileAsset.objects.filter(user_id= user_id).sum('size')
 
-    print(asset_size)
-    print(user_max_storage)
-    print(user_used_storage)
-
     if (user_max_storage - user_used_storage) > asset_size:
         return True
     return False
