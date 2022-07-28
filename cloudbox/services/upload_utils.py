@@ -4,7 +4,7 @@ import base64
 from datetime import datetime
 from PIL import Image
 
-import boto3
+from mongoengine import connect, disconnect
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 
@@ -67,7 +67,9 @@ def process_stream_to_file(data: dict) -> str:
     """
     data["stream"] = base64.b64decode(data["stream"])
     data["stream"] = io.BytesIO(data["stream"])
-    return FileStorage(**data)
+    file= FileStorage(**data)
+    
+    return file, data["content_type"]
 
 #configure boto3
 # s3 = boto3.client(
@@ -109,3 +111,14 @@ def upload_file_from_stream(data: dict) -> str:
         },
     )
     return f"{os.getenv('S3_BUCKET_BASE_URL')}/{file.filename}"
+
+
+def mongo_connect():
+    """
+    We are supposed to connect to the  database inside the task.
+    The reason is because child processes (created by Celery) must have their own instance of mongo client.
+    re: https://stackoverflow.com/questions/49743258/mongodb-into-a-celery-task-flask-application
+
+    """
+    disconnect(alias='default')
+    return connect("cloudbox")

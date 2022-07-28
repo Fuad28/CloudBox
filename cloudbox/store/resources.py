@@ -151,6 +151,7 @@ class Folder(Resource):
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
 
 class File(Resource):
+    @marshal_with(file_asset_fields)
     @jwt_required(optional= True)
     def get(self, id= None):
         #both verified and anonymous users can access this endpoint
@@ -195,14 +196,24 @@ class File(Resource):
 
         if restricted_to_owner_viewers_editors_general_CUD(parent, user_id):
             #check if user has enough storage space for the comming asset
-            asset_size = os.stat(args["file"]).st_size
+            data= process_file_to_stream(args["file"], to_utf8= True)
+            file = args['file']
+            file.seek(0, os.SEEK_END)
+            asset_size = file.tell()
+            file.seek(0, 0)
+
             if user_has_storage_space(user_id, asset_size):
-                asset= FileAsset(user_id= user_id, is_folder= True, parent= parent, name= args.get('name'), size= asset_size)
+                asset= FileAsset(
+                    user_id= user_id, 
+                    is_folder= False, 
+                    parent= parent, 
+                    name= file.filename.split('.')[0],
+                    file_type= file.filename.split('.')[1],
+                    size= asset_size)
                 asset.save()
 
                 #upload asset to aws
-                data= process_file_to_stream(args["file"])
-                upload_file_to_s3(data, asset.id)
+                upload_file_to_s3.delay(data, asset.id)
 
                 return single_entity_response(asset), HTTP_201_CREATED
             else: 

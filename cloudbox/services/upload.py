@@ -37,21 +37,31 @@ def upload_profile_picture(image_bytes, user_id):
     sql_db.session.commit()
     return cloud_url
 
+from mongoengine import disconnect, connect
+from celery.signals import task_prerun
+
+# @task_prerun.connect
+# def on_task_init(*args, **kwargs):
+#     disconnect(alias='default')
+    # connect(db, host=host, port=port, maxPoolSize=400, minPoolSize=200, alias='default')
 
 @celery.task
 def upload_file_to_s3(data: dict, asset_id: str) -> str:
     """
     Upload file to S3
     """
-    file= process_stream_to_file(data)
-
+    file, content_type= process_stream_to_file(data)
+    
     s3.upload_fileobj(
       file,
       os.environ.get("S3_BUCKET_NAME"),
       file.filename,
-      ExtraArgs={"ContentType": file.content_type}
+      ExtraArgs={"ContentType": content_type}
       )
 
-    asset= FileAsset.get(id= asset_id)
+    #create mongodb connection
+    mongo_connect()
+
+    asset= FileAsset.objects.get(id= asset_id)
     asset.storage_link= f"{os.getenv('S3_BUCKET_BASE_URL')}/{data['filename']}"
     asset.save()

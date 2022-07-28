@@ -63,8 +63,8 @@ def restricted_to_owner_viewers_editors_general_CUD(asset: BaseAsset, user_id: s
 
 def user_has_storage_space(user_id: str, asset_size: int):
     """Check if a user has storage space for asset being uploaded"""
-    user_max_storage= User.query.get(user_id).max_storage_size
-    user_used_storage= FileAsset.objects.filter(user_id= user_id).only('size').sum('size')
+    user_max_storage= User.query.get(user_id).max_storage_size()
+    user_used_storage= FileAsset.objects.filter(user_id= user_id).sum('size')
 
     print(asset_size)
     print(user_max_storage)
