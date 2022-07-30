@@ -13,3 +13,6 @@ folder_asset_fields= {
 }
 
 file_asset_fields= folder_asset_fields | {"file_type": fields.String, "storage_link": fields.String}
+
+asset_editors_fields= {'id': fields.String, 'editors': fields.List}
+asset_viewers_fields= {'id': fields.String, 'viewers': fields.List}
