@@ -20,6 +20,16 @@ def _user_is_logged_in(user_id: str):
     """used in permissions where user log in is necessary"""
     if user_id is None:
         return False
+
+def if_no_ID_404(id: str):
+    """First chheck for endpoints that require ID"""
+    if id:
+        return True
+    return False
+
+def get_email(user_id: str):
+    return User.objects.get_or_404(user_id= user_id).email
+
         
 
 def unrestricted_R(asset: BaseAsset, user_id: str= None) -> bool:
@@ -40,15 +50,15 @@ def restricted_to_owner_viewers_editors_general_R(asset: BaseAsset, user_id: str
 
     if (user_id== asset.user_id) \
         | (asset.anyone_can_access != 'restricted') \
-            | (user_id in asset.editors) \
-                | (user_id in asset.viewers):
+            | (get_email(user_id) in asset.editors) \
+                | (get_email(user_id) in asset.viewers):
 
         return True
 
     return False
 
 
-def restricted_to_owner_viewers_editors_general_CUD(asset: BaseAsset, user_id: str= None):
+def restricted_to_owner_editors_general_editors_CUD(asset: BaseAsset, user_id: str= None):
     """
     1. User must be logged in
     2. User is either owner or general access isnt restricted or user belongs to the asset's 
@@ -56,7 +66,7 @@ def restricted_to_owner_viewers_editors_general_CUD(asset: BaseAsset, user_id: s
     """
     _user_is_logged_in(user_id)
 
-    if (user_id== asset.user_id) | (asset.anyone_can_access == 'editor') | (user_id in asset.editors):
+    if (user_id== asset.user_id) | (asset.anyone_can_access == 'editor') | (get_email(user_id) in asset.editors):
         return True
     return False
 
@@ -65,6 +75,8 @@ def user_has_storage_space(user_id: str, asset_size: int):
     """Check if a user has storage space for asset being uploaded"""
     user_max_storage= User.query.get(user_id).max_storage_size()
     user_used_storage= FileAsset.objects.filter(user_id= user_id).sum('size')
+
+    #send 80% mail >>>
 
     if (user_max_storage - user_used_storage) > asset_size:
         return True

@@ -10,3 +10,7 @@ file_asset_creation_args.add_argument("file", type=werkzeug.datastructures.FileS
 
 file_asset_update_args= reqparse.RequestParser()
 file_asset_update_args.add_argument("name", type=str, required=True)
+
+asset_editors_viewers_args= reqparse.RequestParser()
+asset_editors_viewers_args.add_argument("users", type=list, required=True)
+asset_editors_viewers_args.add_argument("notify", type=bool, required=True)
