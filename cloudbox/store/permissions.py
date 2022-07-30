@@ -28,7 +28,7 @@ def if_no_ID_404(id: str):
     return False
 
 def get_email(user_id: str):
-    return User.objects.get_or_404(user_id= user_id).email
+    return User.query.get_or_404(user_id).email
 
         
 

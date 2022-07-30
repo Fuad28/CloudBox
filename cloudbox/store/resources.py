@@ -1,7 +1,8 @@
 # from flask import abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restful import Resource,  marshal_with
+from flask_restful import Resource,  marshal_with, marshal
 from sqlalchemy.orm import load_only
+from mongoengine.fields import ObjectId
 
 import os
 
@@ -14,7 +15,7 @@ from ..services.upload_utils import process_file_to_stream
 
 from .fields import folder_asset_fields, file_asset_fields, asset_editors_fields, asset_viewers_fields
 from .utils import combined_folder_file_response, single_entity_response
-from .request_parsers import folder_asset_args, file_asset_update_args, file_asset_creation_args, asset_editors_viewers_args
+from .request_parsers import folder_asset_args, file_asset_update_args, file_asset_creation_args, asset_editors_viewers_args, asset_editors_viewers_removal_args
 from .permissions import (unrestricted_R, restricted_to_owner_viewers_editors_general_R,
 restricted_to_owner_editors_general_editors_CUD, if_no_ID_404, user_has_storage_space)
 
@@ -202,23 +203,25 @@ class File(Resource):
             file.seek(0, os.SEEK_END)
             asset_size = file.tell()
             file.seek(0, 0)
+            file.save("/media")
 
-            if user_has_storage_space(user_id, asset_size):
-                asset= FileAsset(
-                    user_id= user_id, 
-                    is_folder= False, 
-                    parent= parent, 
-                    name= file.filename.split('.')[0],
-                    file_type= file.filename.split('.')[1],
-                    size= asset_size)
-                asset.save()
+            if user_has_storage_space(user_id, 0):
+                # asset= FileAsset(
+                #     user_id= user_id, 
+                #     is_folder= False, 
+                #     parent= parent, 
+                #     name= file.filename.split('.')[0],
+                #     file_type= file.filename.split('.')[1],
+                #     size= asset_size)
+                # asset.save()
 
-                #upload asset to aws
-                data= process_file_to_stream(args["file"], to_utf8= True)
-                upload_file_to_s3.delay(data, asset.id)
-                # asset= FileAsset.objects.get(id= "62e2fa102804d8d90ed5596a")
+                # upload asset to aws
+                # data= process_file_to_stream(args["file"], to_utf8= True)
+                # upload_file_to_s3.delay(data, asset.id)
+                asset= FileAsset.objects.get(id= "62e31759be1d7d222ba5d083")
+                return asset, HTTP_201_CREATED
 
-                return single_entity_response(asset), HTTP_201_CREATED
+                # return single_entity_response(asset), HTTP_201_CREATED
             else: 
                 return NOT_ENOUGH_SPACE_ERROR, HTTP_403_FORBIDDEN
 
@@ -281,7 +284,7 @@ class AssetEditors(Resource):
         7. Non editors can only see owner (if the asset is unrestricted)
 
     """
-    @marshal_with(asset_editors_fields)
+
     @jwt_required(optional= True)
     def get(self, id= None):
         #both verified and anonymous users can access this endpoint
@@ -291,24 +294,24 @@ class AssetEditors(Resource):
             return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
 
         elif user_id is None:
-            asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "id": id})
-
+            asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
+            
             if asset.anyone_can_access == "editor":
-                return asset, HTTP_200_OK
+                print(asset.anyone_can_access)
+                return marshal(asset, asset_editors_fields), HTTP_200_OK
             else:
                 return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_401_UNAUTHORIZED
 
         else:
             #user is logged in and an id was provided
-            asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "id": id})
-
+            asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
+         
             if restricted_to_owner_editors_general_editors_CUD(asset, user_id):
-                return asset, HTTP_200_OK
+                return marshal(asset, asset_editors_fields), HTTP_200_OK
             
             else:
                 return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
 
-    @marshal_with(asset_editors_fields)
     @jwt_required()
     def post(self, id= None):
         args= asset_editors_viewers_args.parse_args(strict=True)
@@ -317,19 +320,20 @@ class AssetEditors(Resource):
         if id is None:
             return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
 
-        asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "id": id})
+        asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
         
         if restricted_to_owner_editors_general_editors_CUD(asset, user_id):
             #check that those editors truly exist
-            editors_emails= User.query.filter(User.email.in_(args.editors)).options(load_only(User.email)).all()
-
+            editors_emails= User.query.with_entities(User.email).filter(User.email.in_(args.users)).all()
+            editors_emails= [x[0] for x in editors_emails]
+            #get only emails that aren't already in the asset's editors
             new_editors_emails= [x for x in editors_emails if x not in asset.editors]
             asset.editors.extend(new_editors_emails)
             asset.save()
 
             #send mail: args.notify  >>>
 
-            return asset, HTTP_201_CREATED
+            return marshal(asset, asset_editors_fields), HTTP_201_CREATED
 
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
     
@@ -337,15 +341,18 @@ class AssetEditors(Resource):
     @jwt_required()
     def delete(self, id= None):
         user_id= get_jwt_identity()
-        args= asset_editors_viewers_args.parse_args(strict=True)
+        args= asset_editors_viewers_removal_args.parse_args(strict=True)
 
         if id is None:
             return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
         
-        asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "id": id})
+        asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
 
         if restricted_to_owner_editors_general_editors_CUD(asset, user_id):
-            asset.editors= [x for x in asset.editors if x not in args.editors]  
+            # asset.editors.extend([x for x in asset.editors if x not in args.users])
+            for x in args.users:
+                if x in asset.editors:
+                    asset.editors.remove(x)
             asset.save()
             return {}, HTTP_204_NO_CONTENT
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
