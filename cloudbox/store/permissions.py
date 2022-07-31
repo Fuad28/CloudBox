@@ -23,9 +23,8 @@ def _user_is_logged_in(user_id: str):
 
 def if_no_ID_404(id: str):
     """First chheck for endpoints that require ID"""
-    if id:
-        return True
-    return False
+    if id is None:
+        return {"error": "Enter a valid ID"}, 400
 
 def get_email(user_id: str):
     return User.query.get_or_404(user_id).email

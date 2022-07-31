@@ -1,7 +1,6 @@
 # from flask import abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import Resource,  marshal_with, marshal
-from sqlalchemy.orm import load_only
 from mongoengine.fields import ObjectId
 
 import os
@@ -13,8 +12,8 @@ from cloudbox.models import FolderAsset, FileAsset, BaseAsset, User
 from ..services.upload import upload_file_to_s3
 from ..services.upload_utils import process_file_to_stream
 
-from .fields import folder_asset_fields, file_asset_fields, asset_editors_fields, asset_viewers_fields
-from .utils import combined_folder_file_response, single_entity_response
+from .fields import folder_asset_fields, file_asset_fields, asset_viewers_fields, asset_editors_fields
+from .utils import combined_folder_file_response, single_entity_response, add_user_to_asset_access_list, remove_user_from_asset_access_list
 from .request_parsers import folder_asset_args, file_asset_update_args, file_asset_creation_args, asset_editors_viewers_args, asset_editors_viewers_removal_args
 from .permissions import (unrestricted_R, restricted_to_owner_viewers_editors_general_R,
 restricted_to_owner_editors_general_editors_CUD, if_no_ID_404, user_has_storage_space)
@@ -284,21 +283,20 @@ class AssetEditors(Resource):
         7. Non editors can only see owner (if the asset is unrestricted)
 
     """
+    access_type= "editors"
 
     @jwt_required(optional= True)
     def get(self, id= None):
         #both verified and anonymous users can access this endpoint
         user_id= get_jwt_identity()
 
-        if id is None:
-            return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
+        if_no_ID_404(id)
 
-        elif user_id is None:
+        if user_id is None:
             asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
             
             if asset.anyone_can_access == "editor":
-                print(asset.anyone_can_access)
-                return marshal(asset, asset_editors_fields), HTTP_200_OK
+                return (marshal(asset, asset_editors_fields), HTTP_200_OK) if self.access_type == "editors" else (marshal(asset, asset_viewers_fields), HTTP_200_OK)
             else:
                 return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_401_UNAUTHORIZED
 
@@ -307,8 +305,8 @@ class AssetEditors(Resource):
             asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
          
             if restricted_to_owner_editors_general_editors_CUD(asset, user_id):
-                return marshal(asset, asset_editors_fields), HTTP_200_OK
-            
+                return (marshal(asset, asset_editors_fields), HTTP_200_OK) if self.access_type == "editors" else (marshal(asset, asset_viewers_fields), HTTP_200_OK)
+                
             else:
                 return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
 
@@ -317,24 +315,15 @@ class AssetEditors(Resource):
         args= asset_editors_viewers_args.parse_args(strict=True)
         user_id= get_jwt_identity()
 
-        if id is None:
-            return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
+        if_no_ID_404(id)
 
         asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
         
         if restricted_to_owner_editors_general_editors_CUD(asset, user_id):
-            #check that those editors truly exist
-            editors_emails= User.query.with_entities(User.email).filter(User.email.in_(args.users)).all()
-            editors_emails= [x[0] for x in editors_emails]
-            #get only emails that aren't already in the asset's editors
-            new_editors_emails= [x for x in editors_emails if x not in asset.editors]
-            asset.editors.extend(new_editors_emails)
-            asset.save()
-
-            #send mail: args.notify  >>>
-
-            return marshal(asset, asset_editors_fields), HTTP_201_CREATED
-
+            asset= add_user_to_asset_access_list(asset, self.access_type, args.users)
+            
+            #send mail: args.notify, args.users  >>>
+            return (marshal(asset, asset_editors_fields), HTTP_201_CREATED) if self.access_type == "editors" else (marshal(asset, asset_viewers_fields), HTTP_201_CREATED)
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
     
   
@@ -343,20 +332,15 @@ class AssetEditors(Resource):
         user_id= get_jwt_identity()
         args= asset_editors_viewers_removal_args.parse_args(strict=True)
 
-        if id is None:
-            return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
+        if_no_ID_404(id)
         
         asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
 
         if restricted_to_owner_editors_general_editors_CUD(asset, user_id):
-            # asset.editors.extend([x for x in asset.editors if x not in args.users])
-            for x in args.users:
-                if x in asset.editors:
-                    asset.editors.remove(x)
-            asset.save()
+            asset= remove_user_from_asset_access_list(asset, self.access_type, args.users)
             return {}, HTTP_204_NO_CONTENT
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
 
 
-class AssetViewers(Resource):
-    pass
+class AssetViewers(AssetEditors):
+    access_type= "viewers"
