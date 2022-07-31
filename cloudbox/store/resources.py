@@ -12,9 +12,11 @@ from cloudbox.models import FolderAsset, FileAsset, BaseAsset, User
 from ..services.upload import upload_file_to_s3
 from ..services.upload_utils import process_file_to_stream
 
-from .fields import folder_asset_fields, file_asset_fields, asset_viewers_fields, asset_editors_fields
+from .fields import (folder_asset_fields, file_asset_fields, asset_viewers_fields, asset_editors_fields,
+ asset_general_access_fields)
 from .utils import combined_folder_file_response, single_entity_response, add_user_to_asset_access_list, remove_user_from_asset_access_list
-from .request_parsers import folder_asset_args, file_asset_update_args, file_asset_creation_args, asset_editors_viewers_args, asset_editors_viewers_removal_args
+from .request_parsers import (folder_asset_args, file_asset_update_args, file_asset_creation_args, 
+asset_editors_viewers_args, asset_editors_viewers_removal_args, asset_general_access_args)
 from .permissions import (unrestricted_R, restricted_to_owner_viewers_editors_general_R,
 restricted_to_owner_editors_general_editors_CUD, if_no_ID_404, user_has_storage_space)
 
@@ -204,7 +206,7 @@ class File(Resource):
             file.seek(0, 0)
             file.save("/media")
 
-            if user_has_storage_space(user_id, 0):
+            if user_has_storage_space(user_id, asset_size):
                 # asset= FileAsset(
                 #     user_id= user_id, 
                 #     is_folder= False, 
@@ -344,3 +346,23 @@ class AssetEditors(Resource):
 
 class AssetViewers(AssetEditors):
     access_type= "viewers"
+
+class GeneralAccess(Resource):
+    @jwt_required()
+    def patch(self, id= None):
+        #access given to: verified owners of assets, those in the asset's editors' list, 
+        # if the asset's anyone_can_acess is editors
+        #id is asset being updated id
+
+        args= asset_general_access_args.parse_args(strict=True)
+        user_id= get_jwt_identity()
+
+        if_no_ID_404(id)
+
+        asset= asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
+
+        if restricted_to_owner_editors_general_editors_CUD(asset, user_id):      
+            asset.update(anyone_can_access= args.get('access_type'))
+            asset.save()
+            return marshal(asset, asset_general_access_fields), HTTP_200_OK
+        return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN

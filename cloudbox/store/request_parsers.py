@@ -17,3 +17,12 @@ asset_editors_viewers_args.add_argument("notify", type=bool, required=True)
 
 asset_editors_viewers_removal_args= reqparse.RequestParser()
 asset_editors_viewers_removal_args.add_argument("users", type=str, help="users list is required", required=True, action= 'append')
+
+asset_general_access_args= reqparse.RequestParser()
+asset_general_access_args.add_argument(
+    "access_type",
+    type=str,
+    help="access_type list is required",
+    required=True, 
+    choices= ["restricted", "editor", "viewer"], 
+    default= "restricted")
