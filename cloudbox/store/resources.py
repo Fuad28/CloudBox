@@ -49,7 +49,7 @@ class FolderContent(Resource):
             if unrestricted_R(parent, user_id):
                 return combined_folder_file_response(assets), HTTP_200_OK
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_401_UNAUTHORIZED
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
 
         else:
             #user is logged in and an id was provided
@@ -60,7 +60,7 @@ class FolderContent(Resource):
                 return combined_folder_file_response(assets), HTTP_200_OK
             
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
 
 class Folder(Resource):
     @jwt_required(optional= True)
@@ -84,7 +84,7 @@ class Folder(Resource):
             if unrestricted_R(asset, user_id):
                 return single_entity_response(asset), HTTP_200_OK
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_401_UNAUTHORIZED
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
 
         else:
             #user is logged in and an id was provided
@@ -94,7 +94,7 @@ class Folder(Resource):
                 return single_entity_response(asset), HTTP_200_OK
             
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
 
     @marshal_with(folder_asset_fields)
     @jwt_required()
@@ -174,7 +174,7 @@ class File(Resource):
             if unrestricted_R(asset, user_id):
                 return single_entity_response(asset), HTTP_200_OK
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_401_UNAUTHORIZED
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
 
         else:
             #user is logged in and an id was provided
@@ -184,10 +184,7 @@ class File(Resource):
                 return single_entity_response(asset), HTTP_200_OK
             
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
-
-        
-
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
 
 
     @marshal_with(file_asset_fields)
@@ -307,7 +304,7 @@ class AssetEditors(Resource):
             if asset.anyone_can_access == "editor":
                 return (marshal(asset, asset_editors_fields), HTTP_200_OK) if self.access_type == "editors" else (marshal(asset, asset_viewers_fields), HTTP_200_OK)
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_401_UNAUTHORIZED
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
 
         else:
             #user is logged in and an id was provided
@@ -317,7 +314,7 @@ class AssetEditors(Resource):
                 return (marshal(asset, asset_editors_fields), HTTP_200_OK) if self.access_type == "editors" else (marshal(asset, asset_viewers_fields), HTTP_200_OK)
                 
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
 
     @jwt_required()
     def post(self, id= None):
@@ -375,12 +372,42 @@ class GeneralAccess(Resource):
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
 
 class DownloadAsset(Resource):
+    @jwt_required(optional= True)
     def get(self, id= None):
+        user_id= get_jwt_identity()
+
+        if_no_ID_404(id)
+
         asset= BaseAsset.objects.get_or_404(id= id)
-        return download_file(asset)
+
+        if user_id is None:
+            if unrestricted_R(asset, user_id):
+                return download_file(asset), HTTP_200_OK
+            else:
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
+        else:
+            if restricted_to_owner_viewers_editors_general_R(asset, user_id):
+                return download_file(asset), HTTP_200_OK
+            else:
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
+
 
 class ViewFileAsset(Resource):
+    @jwt_required(optional= True)
     def get(self, id= None):
+        user_id= get_jwt_identity()
+
+        if_no_ID_404(id)
+
         asset= BaseAsset.objects.get_or_404(id= id)
-        return view_file(asset)
- 
+
+        if user_id is None:
+            if unrestricted_R(asset, user_id):
+                return view_file(asset), HTTP_200_OK
+            else:
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
+        else:
+            if restricted_to_owner_viewers_editors_general_R(asset, user_id):
+                return view_file(asset), HTTP_200_OK
+            else:
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
