@@ -20,7 +20,6 @@ def single_entity_response(entity):
     if entity.is_folder:
         return marshal(entity, folder_asset_fields) | {"uri": entity.get_uri()}
     else:
-        print(marshal(entity, file_asset_fields) | {"uri": entity.get_uri()})
         return marshal(entity, file_asset_fields) | {"uri": entity.get_uri()}
 
 

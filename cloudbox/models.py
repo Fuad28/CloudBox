@@ -82,7 +82,7 @@ class BaseAsset(nosql_db.Document):
 
 class FileAsset(BaseAsset):
     file_type= nosql_db.StringField(required= True)
-    storage_link= nosql_db.URLField(required= False)
+    s3_key= nosql_db.StringField(required= False)
     size= nosql_db.FloatField(required= False)
 
     def get_uri(self):

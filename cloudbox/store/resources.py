@@ -1,15 +1,18 @@
 # from flask import abort
+from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import Resource,  marshal_with, marshal
 from mongoengine.fields import ObjectId
 
 import os
+import base64
+from io import BytesIO
 
 from cloudbox import nosql_db
 from cloudbox.http_status_codes import *
 from cloudbox.models import FolderAsset, FileAsset, BaseAsset, User
 
-from ..services.upload import upload_file_to_s3
+from ..services.upload import upload_file_to_s3, download_file, view_file
 from ..services.upload_utils import process_file_to_stream
 
 from .fields import (folder_asset_fields, file_asset_fields, asset_viewers_fields, asset_editors_fields,
@@ -154,7 +157,7 @@ class Folder(Resource):
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
 
 class File(Resource):
-    @marshal_with(file_asset_fields)
+    # @marshal_with(file_asset_fields)
     @jwt_required(optional= True)
     def get(self, id= None):
         #both verified and anonymous users can access this endpoint
@@ -183,6 +186,10 @@ class File(Resource):
             else:
                 return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
 
+        
+
+
+
     @marshal_with(file_asset_fields)
     @jwt_required()
     def post(self, id= None):
@@ -204,25 +211,25 @@ class File(Resource):
             file.seek(0, os.SEEK_END)
             asset_size = file.tell()
             file.seek(0, 0)
-            file.save("/media")
+
+            splitted_filename= file.filename.split(".")
 
             if user_has_storage_space(user_id, asset_size):
-                # asset= FileAsset(
-                #     user_id= user_id, 
-                #     is_folder= False, 
-                #     parent= parent, 
-                #     name= file.filename.split('.')[0],
-                #     file_type= file.filename.split('.')[1],
-                #     size= asset_size)
-                # asset.save()
+                asset= FileAsset(
+                    user_id= user_id, 
+                    is_folder= False, 
+                    parent= parent, 
+                    name=  ".".join(splitted_filename[0:-1]),
+                    file_type= file.content_type,
+                    size= asset_size)
+                asset.save()
 
                 # upload asset to aws
-                # data= process_file_to_stream(args["file"], to_utf8= True)
-                # upload_file_to_s3.delay(data, asset.id)
-                asset= FileAsset.objects.get(id= "62e31759be1d7d222ba5d083")
-                return asset, HTTP_201_CREATED
+                data= process_file_to_stream(args["file"], to_utf8= True)
+                upload_file_to_s3.delay(data, asset.id)
+                
+                return single_entity_response(asset), HTTP_201_CREATED
 
-                # return single_entity_response(asset), HTTP_201_CREATED
             else: 
                 return NOT_ENOUGH_SPACE_ERROR, HTTP_403_FORBIDDEN
 
@@ -359,10 +366,21 @@ class GeneralAccess(Resource):
 
         if_no_ID_404(id)
 
-        asset= asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
+        asset= asset= FileAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
 
         if restricted_to_owner_editors_general_editors_CUD(asset, user_id):      
             asset.update(anyone_can_access= args.get('access_type'))
             asset.save()
             return marshal(asset, asset_general_access_fields), HTTP_200_OK
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
+
+class DownloadAsset(Resource):
+    def get(self, id= None):
+        asset= BaseAsset.objects.get_or_404(id= id)
+        return download_file(asset)
+
+class ViewFileAsset(Resource):
+    def get(self, id= None):
+        asset= BaseAsset.objects.get_or_404(id= id)
+        return view_file(asset)
+ 

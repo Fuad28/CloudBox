@@ -14,7 +14,7 @@ folder_asset_fields= {
 
 file_asset_fields= folder_asset_fields | {
     "file_type": fields.String,
-    "storage_link": fields.String
+    "s3_key": fields.String
     }
     
 asset_editors_fields= {
