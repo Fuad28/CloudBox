@@ -1,9 +1,10 @@
 from flask_restful import marshal
-from flask import jsonify
+from flask import jsonify, render_template
 
 from cloudbox import jwt_manager
 from cloudbox.models import BaseAsset, User
 from .fields import folder_asset_fields, file_asset_fields
+from ..services.mailer import send_email
 
 
 def combined_folder_file_response(qs):
@@ -29,7 +30,7 @@ def unauthorized_loader_callback(arg_1):
     return jsonify({"msg": "Missing credentials"})
 
 
-def add_user_to_asset_access_list(asset: BaseAsset, access_type: str, req_users: list):
+def add_user_to_asset_access_list(asset: BaseAsset, access_type: str, req_users: list, notify: bool):
     """util function to perform addition of users to an asset's editors or viewers list"""
 
     #check that those editors truly exist
@@ -43,6 +44,10 @@ def add_user_to_asset_access_list(asset: BaseAsset, access_type: str, req_users:
     else:
         new_user_emails= [x for x in user_emails if x not in asset.viewers]
         asset.viewers.extend(new_user_emails)
+
+    if notify & len(new_user_emails):
+        #send notification to user
+        send_access_notification_email(req_users, asset, access_type)
 
     asset.save()
     return asset
@@ -62,3 +67,32 @@ def remove_user_from_asset_access_list(asset: BaseAsset, access_type: str, req_u
 
     asset.save()
     return asset
+
+def send_access_notification_email(users_mails: list, asset: BaseAsset, access_type: str):
+    """Send email notification to users that thhey  have been added as an asset's viewer or editor"""
+    send_email.delay(
+        subject= f'Notification of access to asset {asset.name}',
+        recipients= users_mails,
+        text_body=render_template(
+            'email/access_notification.txt',
+            asset_name= asset.name,
+            asset_url= asset.get_uri(),
+            access_type= access_type.title()
+            ),
+
+        html_body=render_template(
+            'email/access_notification.html',
+            asset_name= asset.name,
+            asset_url= asset.get_uri(),
+            access_type= access_type.title()
+            )
+        )
+
+def send_storage_space_warning_email(user_mail: list, space_used):
+    """Alert users of using up 80% storage space"""
+    send_email.delay(
+        subject= f'Storage almost full',
+        recipients= user_mail,
+        text_body=render_template('email/storage_notification.txt', space_used= space_used),
+        html_body=render_template('email/storage_notification.html', space_used= space_used)
+        )

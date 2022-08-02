@@ -1,6 +1,8 @@
 from flask import Blueprint
 from flask_restful import Api
-from .resources import Folder, FolderContent, File, AssetEditors, AssetViewers, GeneralAccess, DownloadAsset, ViewFileAsset
+from .resources import (
+    Folder, FolderContent, File, AssetEditors, AssetViewers, GeneralAccess, DownloadAsset, 
+    ViewFileAsset)
 
 store= Blueprint('store', __name__, url_prefix='/api/v1/store/')
 store_api= Api(store)
@@ -10,10 +12,10 @@ store_api.add_resource(Folder, "/folders/", "/folders/<string:id>/")
 store_api.add_resource(FolderContent, "/folders/content/", "/folders/<string:id>/content/")
 store_api.add_resource(File, "/files/<string:id>/")
 store_api.add_resource(ViewFileAsset, "/files/<string:id>/view/")
+store_api.add_resource(DownloadAsset, "/assets/<string:id>/download/")
 store_api.add_resource(AssetEditors, "/assets/<string:id>/editors/")
 store_api.add_resource(AssetViewers, "/assets/<string:id>/viewers/")
 store_api.add_resource(GeneralAccess, "/assets/<string:id>/access-type/")
-store_api.add_resource(DownloadAsset, "/assets/<string:id>/download/")
 
 
 """

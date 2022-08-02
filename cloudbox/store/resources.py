@@ -1,5 +1,4 @@
-# from flask import abort
-from flask import jsonify, request
+from flask import render_template, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import Resource,  marshal_with, marshal
 from mongoengine.fields import ObjectId
@@ -12,12 +11,14 @@ from cloudbox import nosql_db
 from cloudbox.http_status_codes import *
 from cloudbox.models import FolderAsset, FileAsset, BaseAsset, User
 
-from ..services.upload import upload_file_to_s3, download_file, view_file
+from ..services.upload import upload_file_to_s3, download_file, view_file, download_folder_asset
 from ..services.upload_utils import process_file_to_stream
 
 from .fields import (folder_asset_fields, file_asset_fields, asset_viewers_fields, asset_editors_fields,
  asset_general_access_fields)
-from .utils import combined_folder_file_response, single_entity_response, add_user_to_asset_access_list, remove_user_from_asset_access_list
+from .utils import (
+    combined_folder_file_response, single_entity_response, add_user_to_asset_access_list, 
+    remove_user_from_asset_access_list, send_access_notification_email)
 from .request_parsers import (folder_asset_args, file_asset_update_args, file_asset_creation_args, 
 asset_editors_viewers_args, asset_editors_viewers_removal_args, asset_general_access_args)
 from .permissions import (unrestricted_R, restricted_to_owner_viewers_editors_general_R,
@@ -326,9 +327,8 @@ class AssetEditors(Resource):
         asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
         
         if restricted_to_owner_editors_general_editors_CUD(asset, user_id):
-            asset= add_user_to_asset_access_list(asset, self.access_type, args.users)
-            
-            #send mail: args.notify, args.users  >>>
+            asset= add_user_to_asset_access_list(asset, self.access_type, args.users, args.notify)
+
             return (marshal(asset, asset_editors_fields), HTTP_201_CREATED) if self.access_type == "editors" else (marshal(asset, asset_viewers_fields), HTTP_201_CREATED)
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
     
@@ -382,12 +382,12 @@ class DownloadAsset(Resource):
 
         if user_id is None:
             if unrestricted_R(asset, user_id):
-                return download_file(asset), HTTP_200_OK
+                return download_folder_asset(asset) if asset.is_folder else download_file(asset)
             else:
                 return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
         else:
             if restricted_to_owner_viewers_editors_general_R(asset, user_id):
-                return download_file(asset), HTTP_200_OK
+                return download_file(asset)
             else:
                 return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
 
@@ -403,11 +403,11 @@ class ViewFileAsset(Resource):
 
         if user_id is None:
             if unrestricted_R(asset, user_id):
-                return view_file(asset), HTTP_200_OK
+                return view_file(asset)
             else:
                 return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
         else:
             if restricted_to_owner_viewers_editors_general_R(asset, user_id):
-                return view_file(asset), HTTP_200_OK
+                return view_file(asset)
             else:
                 return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN

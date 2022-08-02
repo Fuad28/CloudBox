@@ -1,0 +1,7 @@
+Dear, User
+
+This is to notify that you've been added to {{ asset_name }} {{access_type}} list.
+Access the asset at: {asset_url}
+Sincerely
+
+CloudBox Support Team
