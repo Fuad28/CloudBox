@@ -11,7 +11,7 @@ from cloudbox import nosql_db
 from cloudbox.http_status_codes import *
 from cloudbox.models import FolderAsset, FileAsset, BaseAsset, User
 
-from ..services.upload import upload_file_to_s3, download_file, view_file, download_folder_asset
+from ..services.upload import upload_file_to_s3, download_file_asset, view_file, download_folder_asset
 from ..services.upload_utils import process_file_to_stream
 
 from .fields import (folder_asset_fields, file_asset_fields, asset_viewers_fields, asset_editors_fields,
@@ -111,7 +111,12 @@ class Folder(Resource):
             FolderAsset.objects.get_or_404(id=id)
 
         if restricted_to_owner_editors_general_editors_CUD(parent, user_id): 
-            asset= FolderAsset(user_id= user_id, is_folder= True, parent= parent, name= args.get('name'))
+            asset= FolderAsset(
+                user_id= user_id,
+                is_folder= True,
+                parent= parent,
+                name= args.get('name'),
+                s3_key= f"{parent.s3_key}/{args.get('name')}")
             asset.save()
             return single_entity_response(asset), HTTP_201_CREATED
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
@@ -219,7 +224,8 @@ class File(Resource):
                     parent= parent, 
                     name=  ".".join(splitted_filename[0:-1]),
                     file_type= file.content_type,
-                    size= asset_size)
+                    size= asset_size,
+                    s3_key= f"{parent.s3_key}/{file.filename}")
                 asset.save()
 
                 # upload asset to aws
@@ -382,12 +388,12 @@ class DownloadAsset(Resource):
 
         if user_id is None:
             if unrestricted_R(asset, user_id):
-                return download_folder_asset(asset) if asset.is_folder else download_file(asset)
+                return download_folder_asset(asset) if asset.is_folder else download_file_asset(asset)
             else:
                 return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
         else:
             if restricted_to_owner_viewers_editors_general_R(asset, user_id):
-                return download_file(asset)
+                return download_file_asset(asset)
             else:
                 return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
 

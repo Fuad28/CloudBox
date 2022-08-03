@@ -12,5 +12,9 @@ user_registered= my_signals.signal('user_registered')
 @user_registered.connect
 def create_root_folder(app, user: User):
     # create FolderAsset for user
-    root_folder= FolderAsset(user_id= str(user.id), name= f"{user.first_name} root")
+    root_folder= FolderAsset(
+        user_id= str(user.id),
+        name= f"{user.first_name} root",
+        s3_key= f"{user.first_name} root"
+        )
     root_folder.save()

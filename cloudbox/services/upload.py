@@ -1,10 +1,12 @@
 import os
 
-from flask import Response, redirect
+from flask import Response, redirect, jsonify
 
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+
+from cloudpathlib import CloudPath
 
 import boto3
 from botocore.exceptions import ClientError
@@ -59,7 +61,7 @@ def upload_file_to_s3(data: dict, asset_id: str) -> str:
     s3.upload_fileobj(
       file,
       os.environ.get("S3_BUCKET_NAME"),
-      f"{asset.parent.name}/{file.filename}",
+      f"{asset.s3_key}",
       ExtraArgs={"ContentType": content_type}
       )
     
@@ -82,7 +84,7 @@ def view_file(asset: FileAsset) -> str:
     return redirect(response, code= 302)
 
 
-def download_file(asset: FileAsset) -> str: 
+def download_file_asset(asset: FileAsset) -> str: 
   """ download file from S3 bucket """
   try:
     file = s3.get_object(Bucket=os.environ.get("S3_BUCKET_NAME"), Key=asset.s3_key)
@@ -99,59 +101,20 @@ def download_file(asset: FileAsset) -> str:
       return e
 
 
-
 def download_folder_asset(asset: FolderAsset):
-    """
-    Download the contents of a folder directory
-    Args:
-        bucket_name: the name of the s3 bucket
-        s3_folder: the folder path in the s3 bucket
-        local_dir: a relative or absolute directory path in the local file system
-    """
-    s3 = boto3.resource('s3')
-    local_dir= "CloudBox download"
-    s3_folder= asset.name
+  """Downloads folder assets to local download directory"""
 
-    bucket = s3.Bucket(os.environ.get("S3_BUCKET_NAME"))
+  s3_folder= asset.s3_key.split('/')[-1]
+  local_dir= os.path.expanduser(f'~/Downloads/{s3_folder}')
+  s3_folder= asset.s3_key
 
-    for obj in bucket.objects.filter(Prefix=s3_folder):
-      target = os.path.join(local_dir, os.path.relpath(obj.key, s3_folder))
-      
-      if not os.path.exists(os.path.dirname(target)):
-          os.makedirs(os.path.dirname(target))
-      if obj.key[-1] == '/':
-          continue
+  try:
+    cp = CloudPath(f"s3://{os.getenv('S3_BUCKET_NAME')}/{s3_folder}")
+    cp.download_to(local_dir)
+    return jsonify({"Success": f'{local_dir}'})
 
-    # for filename in file_names:
-    # s3_template_path = queryset.values('file')  
-    # conn = boto.connect_s3('<aws access key>', '<aws secret key>')
-    # bucket = conn.get_bucket('your_bucket')
-    # s3_file_path = bucket.get_key(s3_template_path)
-    # response_headers = {
-    # 'response-content-type': 'application/force-download',
-    # 'response-content-disposition':'attachment;filename="%s"'% filename
-    # }
-    # url = s3_file_path.generate_url(60, 'GET',
-    #             response_headers=response_headers,
-    #             force_http=True)
-
-    # # download the file
-    # file_response = requests.get(url)  
-
-    # if file_response.status_code == 200:
-
-    #     # create a copy of the file
-    #     f1 = open(filename , 'wb')
-    #     f1.write(file_response.content)
-    #     f1.close()
-
-    #     # write the file to the zip folder
-    #     fdir, fname = os.path.split(filename)
-    #     zip_path = os.path.join(zip_subdir, fname)
-    #     zf.write(filename, zip_path)    
-
-    # # close the zip folder and return
-    # zf.close()
-    # response = HttpResponse(byte_stream.getvalue(), content_type="application/x-zip-compressed")
-    # response['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
-    # return response      
+  except ClientError as e:
+    if e.response['Error']['Code'] == "404":
+        print("The object does not exist.")
+    else:
+      return e
