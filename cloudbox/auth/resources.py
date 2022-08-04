@@ -12,8 +12,8 @@ from cloudbox import sql_db
 from cloudbox.http_status_codes import *
 from cloudbox.models import User
 
-from ..services.mailer import send_email
-from ..services.upload import upload_profile_picture
+from ..mailer import send_email
+from .utils import upload_profile_picture
 
 from .fields import register_fields, login_fields, profile_fields, token_ref_fields
 from .request_parsers import register_args,  login_args, forgot_password_args, reset_password_args
@@ -45,6 +45,7 @@ class Register(Resource):
     
         #upload profile picture to cloudinary if any
         if USER_ADDED_PROFILE_PICTURE:
+            print("Sendingggg??")
             upload_profile_picture.delay(image_bytes= image_bytes, user_id= user.id)
 
 
@@ -77,7 +78,7 @@ class Profile(Resource):
     def get(self):
         user_id= get_jwt_identity()
         user= User.query.get(user_id)
-
+        
         return user, HTTP_200_OK
 
 
