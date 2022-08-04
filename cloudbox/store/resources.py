@@ -1,26 +1,26 @@
-from flask import render_template, request
+from flask import current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import Resource,  marshal_with, marshal
 from mongoengine.fields import ObjectId
+from werkzeug.utils import secure_filename
 
 import os
-import base64
-from io import BytesIO
 
-from cloudbox import nosql_db
 from cloudbox.http_status_codes import *
-from cloudbox.models import FolderAsset, FileAsset, BaseAsset, User
+from cloudbox.models import FolderAsset, FileAsset, BaseAsset
 
 from ..services.upload import upload_file_to_s3, download_file_asset, view_file, download_folder_asset
-from ..services.upload_utils import process_file_to_stream
 
 from .fields import (folder_asset_fields, file_asset_fields, asset_viewers_fields, asset_editors_fields,
  asset_general_access_fields)
+
 from .utils import (
     combined_folder_file_response, single_entity_response, add_user_to_asset_access_list, 
-    remove_user_from_asset_access_list, send_access_notification_email)
+    remove_user_from_asset_access_list, unique_secure_filename)
+
 from .request_parsers import (folder_asset_args, file_asset_update_args, file_asset_creation_args, 
 asset_editors_viewers_args, asset_editors_viewers_removal_args, asset_general_access_args)
+
 from .permissions import (unrestricted_R, restricted_to_owner_viewers_editors_general_R,
 restricted_to_owner_editors_general_editors_CUD, if_no_ID_404, user_has_storage_space)
 
@@ -207,30 +207,35 @@ class File(Resource):
         parent= FolderAsset.objects.get_or_404(user_id= user_id, parent= None) if id is None else \
             FolderAsset.objects.get_or_404(id=id)
 
+        #check if user has enough storage space for the comming asset
         if restricted_to_owner_editors_general_editors_CUD(parent, user_id):
-            #check if user has enough storage space for the comming asset
-            
             file = args['file']
-            file.seek(0, os.SEEK_END)
-            asset_size = file.tell()
-            file.seek(0, 0)
+            ext= file.filename.split(".")[1]
 
-            splitted_filename= file.filename.split(".")
+            #secure file name and ensure uniqueness
+            parent_folder_files= [file.name for file in FileAsset.objects.filter(parent=parent).only("name")]
+            filename= unique_secure_filename(secure_filename(file.filename), parent_folder_files)
+            filename= f"{filename}.{ext}"
+             # needed to save file asset name
+
+            file_path= os.path.join(current_app.root_path, "media", filename)
+            file.save(file_path)
+
+            asset_size= os.path.getsize(file_path)
 
             if user_has_storage_space(user_id, asset_size):
                 asset= FileAsset(
                     user_id= user_id, 
                     is_folder= False, 
                     parent= parent, 
-                    name=  ".".join(splitted_filename[0:-1]),
+                    name=  filename.split(".")[0],
                     file_type= file.content_type,
                     size= asset_size,
-                    s3_key= f"{parent.s3_key}/{file.filename}")
+                    s3_key= f"{parent.s3_key}/{filename}")
                 asset.save()
 
                 # upload asset to aws
-                data= process_file_to_stream(args["file"], to_utf8= True)
-                upload_file_to_s3.delay(data, asset.id)
+                upload_file_to_s3.delay(file_path, asset.id)
                 
                 return single_entity_response(asset), HTTP_201_CREATED
 

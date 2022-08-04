@@ -1,5 +1,5 @@
-from flask_restful import marshal
 from flask import jsonify, render_template
+from flask_restful import marshal
 
 from cloudbox import jwt_manager
 from cloudbox.models import BaseAsset, User
@@ -96,3 +96,19 @@ def send_storage_space_warning_email(user_mail: list, space_used):
         text_body=render_template('email/storage_notification.txt', space_used= space_used),
         html_body=render_template('email/storage_notification.html', space_used= space_used)
         )
+def _unique_filename(filename, parent_folder_files):
+    if filename in parent_folder_files:
+        return False
+    return True
+
+
+def unique_secure_filename(filename, parent_folder_files):
+    """Returns secure and unique filename"""
+    filename= filename.split(".")[0]
+    for i in range(1, 1000):
+        if not _unique_filename(filename, parent_folder_files):
+            filename= f"{filename[:-3].strip()} ({i})" if i >1 else f"{filename} ({i})"
+            continue
+        return filename
+        
+
