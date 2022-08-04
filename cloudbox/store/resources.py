@@ -1,20 +1,26 @@
-# from flask import abort
+from flask import current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restful import Resource,  marshal_with
-from sqlalchemy.orm import load_only
+from flask_restful import Resource,  marshal_with, marshal
+from mongoengine.fields import ObjectId
+from werkzeug.utils import secure_filename
 
 import os
 
-from cloudbox import nosql_db
 from cloudbox.http_status_codes import *
-from cloudbox.models import FolderAsset, FileAsset, BaseAsset, User
+from cloudbox.models import FolderAsset, FileAsset, BaseAsset
 
-from ..services.upload import upload_file_to_s3
-from ..services.upload_utils import process_file_to_stream
+from ..services.upload import upload_file_to_s3, download_file_asset, view_file, download_folder_asset
 
-from .fields import folder_asset_fields, file_asset_fields, asset_editors_fields, asset_viewers_fields
-from .utils import combined_folder_file_response, single_entity_response
-from .request_parsers import folder_asset_args, file_asset_update_args, file_asset_creation_args, asset_editors_viewers_args
+from .fields import (folder_asset_fields, file_asset_fields, asset_viewers_fields, asset_editors_fields,
+ asset_general_access_fields)
+
+from .utils import (
+    combined_folder_file_response, single_entity_response, add_user_to_asset_access_list, 
+    remove_user_from_asset_access_list, unique_secure_filename)
+
+from .request_parsers import (folder_asset_args, file_asset_update_args, file_asset_creation_args, 
+asset_editors_viewers_args, asset_editors_viewers_removal_args, asset_general_access_args)
+
 from .permissions import (unrestricted_R, restricted_to_owner_viewers_editors_general_R,
 restricted_to_owner_editors_general_editors_CUD, if_no_ID_404, user_has_storage_space)
 
@@ -44,7 +50,7 @@ class FolderContent(Resource):
             if unrestricted_R(parent, user_id):
                 return combined_folder_file_response(assets), HTTP_200_OK
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_401_UNAUTHORIZED
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
 
         else:
             #user is logged in and an id was provided
@@ -55,7 +61,7 @@ class FolderContent(Resource):
                 return combined_folder_file_response(assets), HTTP_200_OK
             
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
 
 class Folder(Resource):
     @jwt_required(optional= True)
@@ -79,7 +85,7 @@ class Folder(Resource):
             if unrestricted_R(asset, user_id):
                 return single_entity_response(asset), HTTP_200_OK
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_401_UNAUTHORIZED
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
 
         else:
             #user is logged in and an id was provided
@@ -89,7 +95,7 @@ class Folder(Resource):
                 return single_entity_response(asset), HTTP_200_OK
             
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
 
     @marshal_with(folder_asset_fields)
     @jwt_required()
@@ -105,7 +111,12 @@ class Folder(Resource):
             FolderAsset.objects.get_or_404(id=id)
 
         if restricted_to_owner_editors_general_editors_CUD(parent, user_id): 
-            asset= FolderAsset(user_id= user_id, is_folder= True, parent= parent, name= args.get('name'))
+            asset= FolderAsset(
+                user_id= user_id,
+                is_folder= True,
+                parent= parent,
+                name= args.get('name'),
+                s3_key= f"{parent.s3_key}/{args.get('name')}")
             asset.save()
             return single_entity_response(asset), HTTP_201_CREATED
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
@@ -152,7 +163,7 @@ class Folder(Resource):
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
 
 class File(Resource):
-    @marshal_with(file_asset_fields)
+    # @marshal_with(file_asset_fields)
     @jwt_required(optional= True)
     def get(self, id= None):
         #both verified and anonymous users can access this endpoint
@@ -169,7 +180,7 @@ class File(Resource):
             if unrestricted_R(asset, user_id):
                 return single_entity_response(asset), HTTP_200_OK
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_401_UNAUTHORIZED
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
 
         else:
             #user is logged in and an id was provided
@@ -179,7 +190,8 @@ class File(Resource):
                 return single_entity_response(asset), HTTP_200_OK
             
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
+
 
     @marshal_with(file_asset_fields)
     @jwt_required()
@@ -195,30 +207,38 @@ class File(Resource):
         parent= FolderAsset.objects.get_or_404(user_id= user_id, parent= None) if id is None else \
             FolderAsset.objects.get_or_404(id=id)
 
+        #check if user has enough storage space for the comming asset
         if restricted_to_owner_editors_general_editors_CUD(parent, user_id):
-            #check if user has enough storage space for the comming asset
-            
             file = args['file']
-            file.seek(0, os.SEEK_END)
-            asset_size = file.tell()
-            file.seek(0, 0)
+            ext= file.filename.split(".")[1]
+
+            #secure file name and ensure uniqueness
+            parent_folder_files= [file.name for file in FileAsset.objects.filter(parent=parent).only("name")]
+            filename= unique_secure_filename(secure_filename(file.filename), parent_folder_files)
+            filename= f"{filename}.{ext}"
+             # needed to save file asset name
+
+            file_path= os.path.join(current_app.root_path, "media", filename)
+            file.save(file_path)
+
+            asset_size= os.path.getsize(file_path)
 
             if user_has_storage_space(user_id, asset_size):
                 asset= FileAsset(
                     user_id= user_id, 
                     is_folder= False, 
                     parent= parent, 
-                    name= file.filename.split('.')[0],
-                    file_type= file.filename.split('.')[1],
-                    size= asset_size)
+                    name=  filename.split(".")[0],
+                    file_type= file.content_type,
+                    size= asset_size,
+                    s3_key= f"{parent.s3_key}/{filename}")
                 asset.save()
 
-                #upload asset to aws
-                data= process_file_to_stream(args["file"], to_utf8= True)
-                upload_file_to_s3.delay(data, asset.id)
-                # asset= FileAsset.objects.get(id= "62e2fa102804d8d90ed5596a")
-
+                # upload asset to aws
+                upload_file_to_s3.delay(file_path, asset.id)
+                
                 return single_entity_response(asset), HTTP_201_CREATED
+
             else: 
                 return NOT_ENOUGH_SPACE_ERROR, HTTP_403_FORBIDDEN
 
@@ -281,75 +301,124 @@ class AssetEditors(Resource):
         7. Non editors can only see owner (if the asset is unrestricted)
 
     """
-    @marshal_with(asset_editors_fields)
+    access_type= "editors"
+
     @jwt_required(optional= True)
     def get(self, id= None):
         #both verified and anonymous users can access this endpoint
         user_id= get_jwt_identity()
 
-        if id is None:
-            return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
+        if_no_ID_404(id)
 
-        elif user_id is None:
-            asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "id": id})
-
+        if user_id is None:
+            asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
+            
             if asset.anyone_can_access == "editor":
-                return asset, HTTP_200_OK
+                return (marshal(asset, asset_editors_fields), HTTP_200_OK) if self.access_type == "editors" else (marshal(asset, asset_viewers_fields), HTTP_200_OK)
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_401_UNAUTHORIZED
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
 
         else:
             #user is logged in and an id was provided
-            asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "id": id})
-
+            asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
+         
             if restricted_to_owner_editors_general_editors_CUD(asset, user_id):
-                return asset, HTTP_200_OK
-            
+                return (marshal(asset, asset_editors_fields), HTTP_200_OK) if self.access_type == "editors" else (marshal(asset, asset_viewers_fields), HTTP_200_OK)
+                
             else:
-                return NOT_ALLOWED_TO_VIEW_ERROR, HTTP_403_FORBIDDEN
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
 
-    @marshal_with(asset_editors_fields)
     @jwt_required()
     def post(self, id= None):
         args= asset_editors_viewers_args.parse_args(strict=True)
         user_id= get_jwt_identity()
 
-        if id is None:
-            return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
+        if_no_ID_404(id)
 
-        asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "id": id})
+        asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
         
         if restricted_to_owner_editors_general_editors_CUD(asset, user_id):
-            #check that those editors truly exist
-            editors_emails= User.query.filter(User.email.in_(args.editors)).options(load_only(User.email)).all()
+            asset= add_user_to_asset_access_list(asset, self.access_type, args.users, args.notify)
 
-            new_editors_emails= [x for x in editors_emails if x not in asset.editors]
-            asset.editors.extend(new_editors_emails)
-            asset.save()
-
-            #send mail: args.notify  >>>
-
-            return asset, HTTP_201_CREATED
-
+            return (marshal(asset, asset_editors_fields), HTTP_201_CREATED) if self.access_type == "editors" else (marshal(asset, asset_viewers_fields), HTTP_201_CREATED)
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
     
   
     @jwt_required()
     def delete(self, id= None):
         user_id= get_jwt_identity()
-        args= asset_editors_viewers_args.parse_args(strict=True)
+        args= asset_editors_viewers_removal_args.parse_args(strict=True)
 
-        if id is None:
-            return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
+        if_no_ID_404(id)
         
-        asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "id": id})
+        asset= BaseAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
 
         if restricted_to_owner_editors_general_editors_CUD(asset, user_id):
-            asset.editors= [x for x in asset.editors if x not in args.editors]  
-            asset.save()
+            asset= remove_user_from_asset_access_list(asset, self.access_type, args.users)
             return {}, HTTP_204_NO_CONTENT
         return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
 
 
-class AssetViewers(Resource):
-    pass
+class AssetViewers(AssetEditors):
+    access_type= "viewers"
+
+class GeneralAccess(Resource):
+    @jwt_required()
+    def patch(self, id= None):
+        #access given to: verified owners of assets, those in the asset's editors' list, 
+        # if the asset's anyone_can_acess is editors
+        #id is asset being updated id
+
+        args= asset_general_access_args.parse_args(strict=True)
+        user_id= get_jwt_identity()
+
+        if_no_ID_404(id)
+
+        asset= asset= FileAsset.objects.get_or_404(__raw__= {"parent": {"$exists": True}, "_id": ObjectId(id)})
+
+        if restricted_to_owner_editors_general_editors_CUD(asset, user_id):      
+            asset.update(anyone_can_access= args.get('access_type'))
+            asset.save()
+            return marshal(asset, asset_general_access_fields), HTTP_200_OK
+        return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
+
+class DownloadAsset(Resource):
+    @jwt_required(optional= True)
+    def get(self, id= None):
+        user_id= get_jwt_identity()
+
+        if_no_ID_404(id)
+
+        asset= BaseAsset.objects.get_or_404(id= id)
+
+        if user_id is None:
+            if unrestricted_R(asset, user_id):
+                return download_folder_asset(asset) if asset.is_folder else download_file_asset(asset)
+            else:
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
+        else:
+            if restricted_to_owner_viewers_editors_general_R(asset, user_id):
+                return download_file_asset(asset)
+            else:
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
+
+
+class ViewFileAsset(Resource):
+    @jwt_required(optional= True)
+    def get(self, id= None):
+        user_id= get_jwt_identity()
+
+        if_no_ID_404(id)
+
+        asset= BaseAsset.objects.get_or_404(id= id)
+
+        if user_id is None:
+            if unrestricted_R(asset, user_id):
+                return view_file(asset)
+            else:
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
+        else:
+            if restricted_to_owner_viewers_editors_general_R(asset, user_id):
+                return view_file(asset)
+            else:
+                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN

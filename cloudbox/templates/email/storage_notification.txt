@@ -1,0 +1,9 @@
+Dear, User
+
+This is to notify that you've used up {{ space_used }}% of your storage.
+You can get more at: 
+
+
+Sincerely
+
+CloudBox Support Team

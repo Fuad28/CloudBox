@@ -70,6 +70,7 @@ class BaseAsset(nosql_db.Document):
     parent= nosql_db.ReferenceField("BaseAsset", reverse_delete_rule= nosql_db.CASCADE)
     uri= nosql_db.StringField()
     name= nosql_db.StringField(max_length=255, required= True)
+    s3_key= nosql_db.StringField(required= False)
     created_at = nosql_db.DateTimeField(required=True, default=datetime.now)
     updated_at = nosql_db.DateTimeField(required=True, default=datetime.now)
     # parent= nosql_db.StringField(binary= False, required=True)
@@ -82,7 +83,6 @@ class BaseAsset(nosql_db.Document):
 
 class FileAsset(BaseAsset):
     file_type= nosql_db.StringField(required= True)
-    storage_link= nosql_db.URLField(required= False)
     size= nosql_db.FloatField(required= False)
 
     def get_uri(self):

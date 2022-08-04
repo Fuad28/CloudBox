@@ -14,7 +14,10 @@ POST PATCH DELETE
     b. editors
 
 """
+import math
+
 from ..models import BaseAsset, FileAsset, User
+from .utils import send_storage_space_warning_email
 
 def _user_is_logged_in(user_id: str):
     """used in permissions where user log in is necessary"""
@@ -23,12 +26,11 @@ def _user_is_logged_in(user_id: str):
 
 def if_no_ID_404(id: str):
     """First chheck for endpoints that require ID"""
-    if id:
-        return True
-    return False
+    if id is None:
+        return {"error": "Enter a valid ID"}, 400
 
 def get_email(user_id: str):
-    return User.objects.get_or_404(user_id= user_id).email
+    return User.query.get_or_404(user_id).email
 
         
 
@@ -73,10 +75,14 @@ def restricted_to_owner_editors_general_editors_CUD(asset: BaseAsset, user_id: s
 
 def user_has_storage_space(user_id: str, asset_size: int):
     """Check if a user has storage space for asset being uploaded"""
-    user_max_storage= User.query.get(user_id).max_storage_size()
+    user= User.query.get(user_id)
+    user_max_storage= user.max_storage_size()
     user_used_storage= FileAsset.objects.filter(user_id= user_id).sum('size')
+    space_used= math.floor(user_used_storage/user_max_storage) * 100
 
-    #send 80% mail >>>
+    if (space_used > 75):
+        #send mail if user has used up to 805 of their storage space
+        send_storage_space_warning_email([user.mail], space_used)
 
     if (user_max_storage - user_used_storage) > asset_size:
         return True
