@@ -44,6 +44,7 @@ class User(sql_db.Model):
     subscription_plan= sql_db.Column(
         sql_db.Enum(SubscriptionPlanEnum), default=SubscriptionPlanEnum.free, nullable=False
         )
+    transactions= sql_db.relationship("Transaction", backref="user")
 
     def max_storage_size(self):
         hundred_mb= 1024 * 1024 * 100 
@@ -59,6 +60,15 @@ class User(sql_db.Model):
 
     def __repr__(self):
         return f"User('{self.first_name}',  '{self.id}')"
+
+class Transaction(sql_db.Model):
+    id = sql_db.Column(sql_db.Integer, primary_key=True, default= uuid.uuid4)
+    user_id= sql_db.Column(UUID(as_uuid=True), sql_db.ForeignKey("user.id"))
+    reference_id= sql_db.Column(sql_db.String(20), nullable=False)
+    status= sql_db.Column(sql_db.String(20))
+        
+    def __repr__(self):
+        return f"Transaction({self.reference_id})"
 
 
 class BaseAsset(nosql_db.Document):

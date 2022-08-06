@@ -35,11 +35,13 @@ def create_app(config_class= Config):
     from cloudbox.core.routes import core
     from cloudbox.auth.routes import auth
     from cloudbox.store.routes import store
+    from cloudbox.payment.routes import payment
 
     app.register_blueprint(core)
     app.register_blueprint(auth)
     app.register_blueprint(store)
+    app.register_blueprint(payment)
 
     return app
 
-from .models import User
+from .models import User, Transaction #noqa
