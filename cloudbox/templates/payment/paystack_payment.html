@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <form id="paymentForm">
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email-address" required value="{{ email }}"/>
+    </div>
+    <div class="form-group">
+      <label for="amount">Amount</label>
+      <select name="amount" id="amount">
+            <option value="2000">Basic - 1GB - N2000</option>
+            <option value="5000">Standard - 5GB - N5000</option>
+            <option value="10000">Premium - 10GB - N10000</option>
+    </select>
+    </div>
+    <div class="form-group">
+      <label for="first-name">First Name</label>
+      <input type="text" id="first-name" value="{{ first_name }}"/>
+    </div>
+    <div class="form-group">
+      <label for="last-name">Last Name</label>
+      <input type="text" id="last-name" value="{{ last_name }}"/>
+    </div>
+    <div class="form-submit">
+      <button type="submit" onclick="payWithPaystack()"> Pay </button>
+    </div>
+  </form>
+</html>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+  const paymentForm = document.getElementById('paymentForm');
+paymentForm.addEventListener("submit", payWithPaystack, false);
+
+function payWithPaystack(e) {
+  e.preventDefault();
+
+  let handler = PaystackPop.setup({
+    key: 'pk_test_45da77cfe8aa476d812784fb03411e1a382cd291', 
+    email: document.getElementById("email-address").value,
+    amount: document.getElementById("amount").value * 100,
+
+    onClose: function(){
+      alert('Window closed.');
+    },
+    callback: function(response){
+      alert(response.data);
+      console.log(response.data);
+      window.location = `http://127.0.0.1:5000/api/v1/payment/verify/${response.reference}`;
+    }
+  });
+
+  handler.openIframe();
+}
+</script>  

@@ -62,9 +62,10 @@ class User(sql_db.Model):
         return f"User('{self.first_name}',  '{self.id}')"
 
 class Transaction(sql_db.Model):
-    id = sql_db.Column(sql_db.Integer, primary_key=True, default= uuid.uuid4)
+    id = sql_db.Column(sql_db.Integer, primary_key=True)
     user_id= sql_db.Column(UUID(as_uuid=True), sql_db.ForeignKey("user.id"))
-    reference_id= sql_db.Column(sql_db.String(20), nullable=False)
+    reference_id= sql_db.Column(sql_db.String(50), nullable=False)
+    amount=  sql_db.Column(sql_db.Float, nullable=False)
     status= sql_db.Column(sql_db.String(20))
         
     def __repr__(self):

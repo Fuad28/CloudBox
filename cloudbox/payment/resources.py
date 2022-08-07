@@ -1,163 +1,69 @@
-from flask import current_app
+from flask import current_app, render_template, make_response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import Resource,  marshal_with, marshal
-from mongoengine.fields import ObjectId
-from werkzeug.utils import secure_filename
-
-import os
 
 from cloudbox.http_status_codes import *
-from cloudbox.models import FolderAsset, FileAsset, BaseAsset
+from cloudbox import sql_db
+from cloudbox.models import Transaction, User
 
-from .utils import upload_file_to_s3, download_file_asset, view_file, download_folder_asset
+from .fields import transaction_fields
 
-from .fields import (folder_asset_fields, file_asset_fields, asset_viewers_fields, asset_editors_fields,
- asset_general_access_fields)
-
-from .utils import (
-    combined_folder_file_response, single_entity_response, add_user_to_asset_access_list, 
-    remove_user_from_asset_access_list, unique_secure_filename)
-
-from .request_parsers import (folder_asset_args, file_asset_update_args, file_asset_creation_args, 
-asset_editors_viewers_args, asset_editors_viewers_removal_args, asset_general_access_args)
-
-from .permissions import (unrestricted_R, restricted_to_owner_viewers_editors_general_R,
-restricted_to_owner_editors_general_editors_CUD, if_no_ID_404, user_has_storage_space)
-
-            
-class FolderContent(Resource):
-    @jwt_required(optional= True)
-    def get(self, id= None):
-        """both verified and anonymous users can access this endpoint"""
-
-        user_id= get_jwt_identity()
-
-        if (id is None) & (user_id is None):
-            #user isn't logged in and no valid id is provided
-            return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
-
-        elif id is None:
-            #user is logged in but an id isn't provided, return content of the user's root folder
-            user_root= FolderAsset.objects.get_or_404(user_id= user_id, parent= None)
-            assets= BaseAsset.objects.filter(parent= user_root)
-            return combined_folder_file_response(assets)
-
-        elif user_id is None:
-            #an id is provided but user is not logged in
-            parent= FolderAsset.objects.get_or_404(id= id)
-            assets= BaseAsset.objects.filter(parent= parent)
-
-            if unrestricted_R(parent, user_id):
-                return combined_folder_file_response(assets), HTTP_200_OK
-            else:
-                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
-
-        else:
-            #user is logged in and an id was provided
-            parent= FolderAsset.objects.get_or_404(id= id)
-
-            if restricted_to_owner_viewers_editors_general_R(parent, user_id):
-                assets=  BaseAsset.objects.filter(parent= parent)
-                return combined_folder_file_response(assets), HTTP_200_OK
-            
-            else:
-                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
-
-class Folder(Resource):
-    @jwt_required(optional= True)
-    def get(self, id= None):
-        #both verified and anonymous users can access this endpoint
-        user_id= get_jwt_identity()
-
-        if (id is None) & (user_id is None):
-            #user isn't logged in and no valid id is provided
-            return INVALID_ID_ERROR, HTTP_404_NOT_FOUND
-
-        elif id is None:
-            #user is logged in but an id isn't provided, return content of the user's root folder
-            user_root= FolderAsset.objects.get_or_404(user_id= user_id, parent= None)
-            return single_entity_response(user_root)
-
-        elif user_id is None:
-            #an id is provided but user is not logged in
-            asset= FolderAsset.objects.get_or_404(id= id)
-
-            if unrestricted_R(asset, user_id):
-                return single_entity_response(asset), HTTP_200_OK
-            else:
-                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
-
-        else:
-            #user is logged in and an id was provided
-            asset= FolderAsset.objects.get_or_404(id= id)
-
-            if restricted_to_owner_viewers_editors_general_R(asset, user_id):
-                return single_entity_response(asset), HTTP_200_OK
-            
-            else:
-                return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
-
-    @marshal_with(folder_asset_fields)
-    @jwt_required()
-    def post(self, id= None):
-        #access given to: verified owners of assets, those in the asset's editors' list, 
-        # if the asset's anyone_can_acess is editors
-        #id is parent asset id
-        args= folder_asset_args.parse_args(strict=True)
-        user_id= get_jwt_identity()
-
-        #no id means a user is creating a folder in  their root folder
-        parent= FolderAsset.objects(user_id= user_id, parent= None).first() if id is None else \
-            FolderAsset.objects.get_or_404(id=id)
-
-        if restricted_to_owner_editors_general_editors_CUD(parent, user_id): 
-            asset= FolderAsset(
-                user_id= user_id,
-                is_folder= True,
-                parent= parent,
-                name= args.get('name'),
-                s3_key= f"{parent.s3_key}/{args.get('name')}")
-            asset.save()
-            return single_entity_response(asset), HTTP_201_CREATED
-        return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
-
-    @jwt_required()
-    def patch(self, id= None):
-        #access given to: verified owners of assets, those in the asset's editors' list, 
-        # if the asset's anyone_can_acess is editors
-        #id is asset being updated id
-
-        args= folder_asset_args.parse_args(strict=True)
-        user_id= get_jwt_identity()
-
-        #id None means we're updating the name of the root folder 
-        asset= FolderAsset.objects.get_or_404(user_id= user_id, parent= None) if id is None else \
-            FolderAsset.objects.get_or_404(id= id)
-
-        if restricted_to_owner_editors_general_editors_CUD(asset, user_id):      
-            #perform the update if: the user owns the asset, is in the asset's editors list or 
-            # the asset's anyone_can_access is editor
-            asset.modify(name= args.get('name')) #modify updates the asset in place unlike update which
-            #saves the update but requires another query to give the updated documents
-            return single_entity_response(asset), HTTP_200_OK
-        return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
+import os
+import requests
         
   
-    @jwt_required()
-    def delete(self, id= None):
-        #access given to: verified owners of assets, those in the asset's editors' list, 
-        # if the asset's anyone_can_acess is editors
-        #id is asset being deleted id and it can't be none
-
-        if id is None:
-            return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
-
+class Payment(Resource):
+    @jwt_required(optional= True)
+    def get(self):
+        headers = {'Content-Type': 'text/html'}
         user_id= get_jwt_identity()
-        asset= FolderAsset.objects.get_or_404(id= id)
 
-        if restricted_to_owner_editors_general_editors_CUD(asset, user_id):      
-            #perform the delete if: the user owns the asset, is in the asset's editors list or 
-            # the asset's anyone_can_access is editor
-            asset.delete()
-            return {"msg": "asset deleted"}, HTTP_204_NO_CONTENT
-        return NOT_ALLOWED_TO_PERFORM_ACTION_ERROR, HTTP_403_FORBIDDEN
+        # if user_id is None:
+        #     return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
+
+        # user= User.query.get(user_id)
+        user= User.query.get("10533f60-ce79-457d-8075-268c5bfaa86d")
+
+        return make_response(
+            render_template(
+            'payment/paystack_payment.html',
+            first_name= user.first_name,
+            last_name= user.last_name,
+            email= user.email
+            ),
+            200,
+            headers)
+
+    
+    @marshal_with(transaction_fields)
+    def post(self, reference_id):
+        paystack_verify_url= f"https://api.paystack.co/transaction/verify/{reference_id}"
+        PAYSTACK_SECRET_KEY= os.environ.get("PAYSTACK_SECRET_KEY")
+        headers= {"Authorization": f"Bearer {PAYSTACK_SECRET_KEY}"}
+
+        res= requests.get(paystack_verify_url, headers= headers).json()
+        email= res["data"]["customer"]["email"]
+        reference_id= res["data"]["reference"]
+        status= res["data"]["status"]
+        amount= res["data"]["amount"]/100
+        user= User.query.filter_by(email= email).first()
+
+        #check if there'is a record for that transaction in the database alread
+        transaction= Transaction.query.filter_by(reference_id= reference_id)
+
+        if len(transaction) == 0:
+            transaction= Transaction(user=user, reference_id= reference_id, status= status,amount= amount)
+
+            sql_db.session.add(transaction)
+            sql_db.session.commit()
+            
+        else:
+            if (transaction.status != "success") & (status == "success"):
+                transaction.status= status
+                sql_db.session.commit()
+                
+        
+        return transaction,  HTTP_200_OK
+
+
+
