@@ -44,6 +44,7 @@ class User(sql_db.Model):
     subscription_plan= sql_db.Column(
         sql_db.Enum(SubscriptionPlanEnum), default=SubscriptionPlanEnum.free, nullable=False
         )
+    transactions= sql_db.relationship("Transaction", backref="user")
 
     def max_storage_size(self):
         hundred_mb= 1024 * 1024 * 100 
@@ -59,6 +60,17 @@ class User(sql_db.Model):
 
     def __repr__(self):
         return f"User('{self.first_name}',  '{self.id}')"
+
+class Transaction(sql_db.Model):
+    id = sql_db.Column(sql_db.Integer, primary_key=True)
+    user_id= sql_db.Column(UUID(as_uuid=True), sql_db.ForeignKey("user.id"))
+    reference_id= sql_db.Column(sql_db.String(50), nullable=False)
+    amount=  sql_db.Column(sql_db.Float, nullable=False)
+    status= sql_db.Column(sql_db.String(20))
+    created_at = sql_db.Column(sql_db.DateTime)
+        
+    def __repr__(self):
+        return f"Transaction({self.reference_id})"
 
 
 class BaseAsset(nosql_db.Document):
@@ -97,6 +109,31 @@ class FolderAsset(BaseAsset):
 
     def get_uri(self):
         return f"{os.getenv('DOMAIN')}/api/v1/folders/{self.id}"
+
+    def __repr__(self):
+        return f"Folder('{self.name}')"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
     # def get_size(self):
     #     return "helllooo"
@@ -117,7 +154,6 @@ class FolderAsset(BaseAsset):
 
     #     return init_dict
 
-    def __repr__(self):
-        return f"Folder('{self.name}')"
+
 
 
