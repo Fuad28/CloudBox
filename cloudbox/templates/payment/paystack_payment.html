@@ -39,17 +39,13 @@ function payWithPaystack(e) {
     key: 'pk_test_45da77cfe8aa476d812784fb03411e1a382cd291', 
     email: document.getElementById("email-address").value,
     amount: document.getElementById("amount").value * 100,
-
-    onClose: function(){
-      alert('Window closed.');
-    },
+    
     callback: function(response){
-      alert(response.data);
-      console.log(response.data);
-      window.location = `http://127.0.0.1:5000/api/v1/payment/verify/${response.reference}`;
+      alert('success. transaction ref is ' + response.reference);
+      window.location = `http://127.0.0.1:5000/api/v1/payments/verify/${response.reference}`;
     }
   });
 
   handler.openIframe();
-}
+  }
 </script>  

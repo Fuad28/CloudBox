@@ -67,6 +67,7 @@ class Transaction(sql_db.Model):
     reference_id= sql_db.Column(sql_db.String(50), nullable=False)
     amount=  sql_db.Column(sql_db.Float, nullable=False)
     status= sql_db.Column(sql_db.String(20))
+    created_at = sql_db.Column(sql_db.DateTime)
         
     def __repr__(self):
         return f"Transaction({self.reference_id})"
@@ -108,6 +109,31 @@ class FolderAsset(BaseAsset):
 
     def get_uri(self):
         return f"{os.getenv('DOMAIN')}/api/v1/folders/{self.id}"
+
+    def __repr__(self):
+        return f"Folder('{self.name}')"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
     # def get_size(self):
     #     return "helllooo"
@@ -128,7 +154,6 @@ class FolderAsset(BaseAsset):
 
     #     return init_dict
 
-    def __repr__(self):
-        return f"Folder('{self.name}')"
+
 
 

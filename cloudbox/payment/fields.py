@@ -5,5 +5,6 @@ transaction_fields= {
     "user_id": fields.String,
     "reference_id": fields.String,
     "amount": fields.Integer,
-    "status": fields.Boolean,
+    "status": fields.String,
+    "created_at": fields.DateTime
 }

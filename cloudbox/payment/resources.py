@@ -1,15 +1,13 @@
-from flask import current_app, render_template, make_response
+from flask import render_template, make_response
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restful import Resource,  marshal_with, marshal
+from flask_restful import Resource,  marshal_with
 
 from cloudbox.http_status_codes import *
 from cloudbox import sql_db
 from cloudbox.models import Transaction, User
 
 from .fields import transaction_fields
-
-import os
-import requests
+from .utils import upgrade_user_subscription, verify_payment
         
   
 class Payment(Resource):
@@ -34,36 +32,39 @@ class Payment(Resource):
             200,
             headers)
 
-    
+class PaymentVerification(Resource):
     @marshal_with(transaction_fields)
-    def post(self, reference_id):
-        paystack_verify_url= f"https://api.paystack.co/transaction/verify/{reference_id}"
-        PAYSTACK_SECRET_KEY= os.environ.get("PAYSTACK_SECRET_KEY")
-        headers= {"Authorization": f"Bearer {PAYSTACK_SECRET_KEY}"}
-
-        res= requests.get(paystack_verify_url, headers= headers).json()
-        email= res["data"]["customer"]["email"]
-        reference_id= res["data"]["reference"]
-        status= res["data"]["status"]
-        amount= res["data"]["amount"]/100
-        user= User.query.filter_by(email= email).first()
-
-        #check if there'is a record for that transaction in the database alread
-        transaction= Transaction.query.filter_by(reference_id= reference_id)
+    def get(self, reference_id):
+        transaction= Transaction.query.filter_by(reference_id= reference_id).all()
 
         if len(transaction) == 0:
-            transaction= Transaction(user=user, reference_id= reference_id, status= status,amount= amount)
-
+            data= verify_payment(reference_id)
+            
+            transaction= Transaction(**data)
             sql_db.session.add(transaction)
             sql_db.session.commit()
+
+            upgrade_user_subscription(data["user"].id, str(int(data["amount"])))
             
         else:
-            if (transaction.status != "success") & (status == "success"):
-                transaction.status= status
+            if (transaction[0].status != "success"):
+                data= verify_payment(reference_id)
+                transaction[0].status= data["status"]
                 sql_db.session.commit()
+
+                if data["status"] == "success":
+                    upgrade_user_subscription(data["user"].id, str(data["amount"]))
                 
         
         return transaction,  HTTP_200_OK
 
 
+class Payments(Resource):
+    @marshal_with(transaction_fields)
+    @jwt_required(optional= True)
+    def get(self):
+        user_id= get_jwt_identity()
+        print(user_id)
+        transactions= Transaction.query.filter_by(user_id= user_id).all()
 
+        return transactions
