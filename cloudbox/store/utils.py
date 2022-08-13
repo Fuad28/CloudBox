@@ -130,7 +130,7 @@ def mongo_connect():
 
     """
     disconnect(alias='default')
-    return connect("cloudbox")
+    return connect(host= os.getenv("CLOUDBOX_NOSQL_DB_URI"))
 
 
 @celery.task

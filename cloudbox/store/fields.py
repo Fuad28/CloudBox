@@ -8,6 +8,9 @@ folder_asset_fields= {
     "name": fields.String,
     "uri": fields.String,
     "size": fields.String,
+    "size": fields.String,
+    "editors": fields.List(fields.String),
+    "viewers": fields.List(fields.String),
     "created_at": fields.String,
     "updated_at": fields.String,
 }

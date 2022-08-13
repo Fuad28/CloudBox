@@ -35,7 +35,7 @@ class User(sql_db.Model):
     security_quest= sql_db.Column(sql_db.String(20))
     security_ans= sql_db.Column(sql_db.String(20))
     #recovery
-    recovery_mail= sql_db.String(sql_db.String(120))
+    recovery_mail= sql_db.Column(sql_db.String(120))
     recovery_no= sql_db.Column(sql_db.String(20))
 
     created_at = sql_db.Column(sql_db.DateTime, default=datetime.now())
@@ -71,7 +71,6 @@ class Transaction(sql_db.Model):
         
     def __repr__(self):
         return f"Transaction({self.reference_id})"
-
 
 class BaseAsset(nosql_db.Document):
     user_id= nosql_db.StringField(binary= False, required=True)
