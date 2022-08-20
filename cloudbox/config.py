@@ -47,31 +47,16 @@ class Config:
     AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
     S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
-    S3_BUCKET_BASE_URL = os.environ.get("S3_BUCKET_BASE_URL")
-
-     # CELERY_CONFIG = {
-    #     "broker_url": os.environ.get("CELERY_BROKER_URL"),
-    #     "result_backend": os.environ.get("CELERY_RESULT_BACKEND"),
-    # }
-    
 
 
-# def make_celery(app: Flask) -> Celery:
-#     """
-#     Create Celery instance to be used to define tasks
-#     """
-#     celery = Celery(app.import_name)
-#     print(app.import_name)
-#     celery.conf.update(app.config["CELERY_CONFIG"])
-
-#     class ContextTask(celery.Task):
-#         """
-#         Injecting application context to celery's tasks
-#         """
-
-#         def __call__(self, *args, **kwargs):
-#             with app.app_context():
-#                 return self.run(*args, **kwargs)
-
-#     celery.Task = ContextTask
-#     return celery
+class ProductionConfig(Config):
+    MONGODB_HOST = os.environ.get('CLOUDBOX_NOSQL_DB_URI') # prod db PROD_CLOUDBOX_NOSQL_DB_URI
+    SQLALCHEMY_DATABASE_URI=os.environ.get('CLOUDBOX_SQL_DB_URI') # prod db PROD_CLOUDBOX_SQL_DB_URI
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SECRET_KEY= os.environ.get('SECRET_KEY')
+    JWT_SECRET_KEY= os.environ.get('JWT_SECRET_KEY')
+    CELERY_RESULT_BACKEND= os.environ.get('CELERY_RESULT_BACKEND') #prod redis db PROD_CELERY_RESULT_BACKEND
+    CELERY_BROKER_URL= os.environ.get('CELERY_BROKER_URL') #prod celery server PROD_CELERY_BROKER_URL
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")

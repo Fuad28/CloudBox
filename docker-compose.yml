@@ -1,0 +1,56 @@
+version: '3.9'
+services:
+  web:
+    image: fuadadio/cloudbox:1.0
+    command: ./wait-for-it.sh db:5432 -- ./docker-entrypoint.sh
+    ports:
+      - 5000:5000
+    depends_on:
+      - db1
+      - db2
+    restart: on-failure
+    volumes:
+      - .:/app
+  
+  db1:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=cloudbox
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - '5432:5432'
+    volumes: 
+      - pgdata:/var/lib/postgresql/data
+  
+  db2:
+    image: mongo:4.0-xenial
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodata:/data/db
+
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - 6379:6379
+    restart: always
+    volumes:
+      - redisdata:/data
+
+  celery:
+    image: web:${TAG}
+    build: .
+    command: celery -A cloudbox.celery_worker.celery worker --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      - C_FORCE_ROOT=true
+    volumes:
+      - .:/app
+
+volumes:
+  pgdata:
+  mongodata:
+  redisdata:

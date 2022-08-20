@@ -16,11 +16,11 @@ class Payment(Resource):
         headers = {"Content-Type": "text/html"}
         user_id = get_jwt_identity()
 
-        # if user_id is None:
-        #     return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
+        if user_id is None:
+            return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_401_UNAUTHORIZED
 
-        # user = User.query.get(user_id)
-        user= User.query.get("10533f60-ce79-457d-8075-268c5bfaa86d")
+        user = User.query.get(user_id)
+        # user= User.query.get("10533f60-ce79-457d-8075-268c5bfaa86d")
 
         return make_response(
             render_template(
