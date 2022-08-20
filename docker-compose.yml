@@ -50,6 +50,11 @@ services:
     volumes:
       - .:/app
 
+  nginx:
+    build: ./nginx
+    restart: always
+
+
 volumes:
   pgdata:
   mongodata:
