@@ -1,8 +1,9 @@
 version: '3.9'
 services:
   web:
-    image: fuadadio/cloudbox:1.0
-    command: ./wait-for-it.sh db:5432 -- ./docker-entrypoint.sh
+    image: web:dev-${TAG}
+    build: .
+    command: ./wait-for-it.sh db:5432 -- ./docker-entrypoint.dev.sh
     ports:
       - 5000:5000
     depends_on:
@@ -40,7 +41,6 @@ services:
       - redisdata:/data
 
   celery:
-    image: web:${TAG}
     build: .
     command: celery -A cloudbox.celery_worker.celery worker --loglevel=info
     depends_on:
