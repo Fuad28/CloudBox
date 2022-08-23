@@ -45,8 +45,8 @@ def create_app(config_class= Config):
     return app
 
 #create db
-# app= create_app()
-# with app.app_context():
-#     sql_db.create_all()
+app= create_app()
+with app.app_context():
+    sql_db.create_all()
 
 from .models import User, Transaction #noqa

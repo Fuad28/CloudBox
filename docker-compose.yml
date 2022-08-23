@@ -1,18 +1,18 @@
 version: '3.9'
 services:
   web:
-    image: fuadadio/cloudbox:1.0
+    image: fuadadio/cloudbox
     command: ./wait-for-it.sh db:5432 -- ./docker-entrypoint.sh
     ports:
       - 5000:5000
     depends_on:
-      - db1
-      - db2
+      - postgres
+      - mongo
     restart: on-failure
     volumes:
       - .:/app
   
-  db1:
+  postgres:
     image: postgres:14.1-alpine
     restart: always
     environment:
@@ -23,7 +23,7 @@ services:
     volumes: 
       - pgdata:/var/lib/postgresql/data
   
-  db2:
+  mongo:
     image: mongo:4.0-xenial
     restart: always
     ports:
@@ -40,7 +40,6 @@ services:
       - redisdata:/data
 
   celery:
-    image: web:${TAG}
     build: .
     command: celery -A cloudbox.celery_worker.celery worker --loglevel=info
     depends_on:

@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import Resource,  marshal_with, marshal
 from mongoengine.fields import ObjectId
@@ -420,3 +420,9 @@ class ViewFileAsset(Resource):
                 return view_file(asset)
             else:
                 return NOT_ALLOWED_TO_ACCESS_ERROR, HTTP_403_FORBIDDEN
+
+
+class TestCICD(Resource):
+    """Enpoint to test CICD"""
+    def  get(self):
+        return jsonify({"msg": "Test 1"})
