@@ -1,4 +1,4 @@
-name: Deploy CloudBox to DockerHub then pull to EC2 te
+name: Deploy CloudBox to DockerHub then pull to EC2
 
 on:
   push:
@@ -35,8 +35,7 @@ jobs:
           HOSTNAME : ${{ secrets.HOSTNAME  }}
           USER_NAME : ${{ secrets.USER_NAME  }}		
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME}
+          ssh -o StrictHostKeyChecking=no -i ${PRIVATE_KEY} ${USER_NAME}@${HOSTNAME}
           cd /home/ubuntu/CloudBox && 
           docker-compose down &&
           git pull &&
