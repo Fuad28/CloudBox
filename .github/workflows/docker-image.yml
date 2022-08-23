@@ -1,9 +1,9 @@
-name: Deploy CloudBox to DockerHub then pull to EC2
+name: Deploy CloudBox to DockerHub then pull to EC2 te
 
 on:
   push:
     tags:
-      - '*'
+      - '**'
 
 jobs:
   push_to_registry:
