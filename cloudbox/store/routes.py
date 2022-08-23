@@ -2,12 +2,12 @@ from flask import Blueprint
 from flask_restful import Api
 from .resources import (
     Folder, FolderContent, File, AssetEditors, AssetViewers, GeneralAccess, DownloadAsset, 
-    ViewFileAsset)
+    ViewFileAsset, TestCICD)
 
 store= Blueprint('store', __name__, url_prefix='/api/v1/store/')
 store_api= Api(store)
 
-
+store_api.add_resource(TestCICD, "/test/")
 store_api.add_resource(Folder, "/folders/", "/folders/<string:id>/")
 store_api.add_resource(FolderContent, "/folders/content/", "/folders/<string:id>/content/")
 store_api.add_resource(File, "/files/<string:id>/")

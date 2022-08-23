@@ -1,6 +1,4 @@
 import os
-# from flask import Flask
-# from celery import Celery
 import cloudinary
 import boto3
 from botocore.client import Config
@@ -44,19 +42,6 @@ class Config:
     CELERY_ACCEPT_CONTENT = ['pickle']
     CELERY_TASK_SERIALIZER = 'pickle'
     CELERY_RESULT_SERIALIZER = 'pickle'
-    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-    S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
-
-
-class ProductionConfig(Config):
-    MONGODB_HOST = os.environ.get('CLOUDBOX_NOSQL_DB_URI') # prod db PROD_CLOUDBOX_NOSQL_DB_URI
-    SQLALCHEMY_DATABASE_URI=os.environ.get('CLOUDBOX_SQL_DB_URI') # prod db PROD_CLOUDBOX_SQL_DB_URI
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SECRET_KEY= os.environ.get('SECRET_KEY')
-    JWT_SECRET_KEY= os.environ.get('JWT_SECRET_KEY')
-    CELERY_RESULT_BACKEND= os.environ.get('CELERY_RESULT_BACKEND') #prod redis db PROD_CELERY_RESULT_BACKEND
-    CELERY_BROKER_URL= os.environ.get('CELERY_BROKER_URL') #prod celery server PROD_CELERY_BROKER_URL
     AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
     S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")

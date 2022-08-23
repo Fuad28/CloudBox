@@ -25,7 +25,7 @@ class User(sql_db.Model):
     first_name= sql_db.Column(sql_db.String(20), nullable=False)
     last_name= sql_db.Column(sql_db.String(20), nullable=False)
     middle_name= sql_db.Column(sql_db.String(20))
-    email= sql_db.Column(sql_db.String(120), unique=True,nullable=False)
+    email= sql_db.Column(sql_db.String(120), unique=True, nullable=False)
     password= sql_db.Column(sql_db.String(120), nullable=False)
     country= sql_db.Column(sql_db.String(20))
     phone= sql_db.Column(sql_db.String(20))
@@ -84,7 +84,6 @@ class BaseAsset(nosql_db.Document):
     s3_key= nosql_db.StringField(required= False)
     created_at = nosql_db.DateTimeField(required=True, default=datetime.now)
     updated_at = nosql_db.DateTimeField(required=True, default=datetime.now)
-    # parent= nosql_db.StringField(binary= False, required=True)
 
     def save(self, *args, **kwargs):
         self.updated_at = datetime.now()
@@ -111,48 +110,5 @@ class FolderAsset(BaseAsset):
 
     def __repr__(self):
         return f"Folder('{self.name}')"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-    # def get_size(self):
-    #     return "helllooo"
-
-    # def to_dict(self):
-
-    #     init_dict= self.to_mongo().to_dict()
-
-    #     # print(init_dict["_cls"].split("."))
-
-    #     init_dict["uri"]= self.get_uri()
-    #     init_dict["id"]= str(self.id)
-    #     init_dict["created_at"]= str(self.created_at)
-    #     init_dict["updated_at"]= str(self.updated_at)
-    #     init_dict["size"]= self.get_size()
-    #     init_dict.pop("_id")
-    #     init_dict.pop("_cls")
-
-    #     return init_dict
-
-
 
 
