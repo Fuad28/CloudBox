@@ -10,10 +10,6 @@ jobs:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     steps:
-      - name: Test
-        env:
-          PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY  }}
-        run: echo "$AWS_PRIVATE_KEY"
       - name: Deploy in EC2
         uses: appleboy/ssh-action@master
         with:
