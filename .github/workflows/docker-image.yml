@@ -17,7 +17,7 @@ jobs:
           username: ${{ secrets.USER_NAME }}
           key: ${{ secrets.AWS_PRIVATE_KEY }}
           script: |
-            sudo cd /home/ubuntu/CloudBox && 
-            docker-compose down &&
-            git pull &&
-            docker-compose up -d --build
+            cd CloudBox && 
+            sudo docker-compose down &&
+            sudo git pull &&
+            sudo docker-compose up -d --build
