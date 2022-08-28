@@ -62,8 +62,8 @@ jobs:
           key: ${{ secrets.AWS_PRIVATE_KEY }}
           script: |
             cd CloudBox && 
-            sudo docker-compose down &&
-            sudo git pull &&
+            docker-compose down &&
+            git pull &&
             export TAG=$(git describe --tags)
             cat .env | envsubst
-            sudo docker-compose up -d --build
+            docker-compose up -d --build
