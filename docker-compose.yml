@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   web:
-    image: fuadadio/cloudbox
+    image: fuadadio/cloudbox:${TAG}
     command: ./wait-for-it.sh db:5432 -- ./docker-entrypoint.sh
     ports:
       - 5000:5000
