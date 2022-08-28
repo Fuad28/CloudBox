@@ -52,7 +52,8 @@ services:
   nginx:
     build: ./nginx
     restart: always
-
+    ports:
+      - 80:80
 
 volumes:
   pgdata:
