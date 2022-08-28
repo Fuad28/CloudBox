@@ -10,33 +10,33 @@ jobs:
     name: Push Docker image to Docker Hub and restart ec2 container
     runs-on: ubuntu-latest
     steps:
-      - name: Make envfile
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_FLASK_ENV: ${{ secrets.CLOUDBOX_FLASK_ENV }}
-          envkey_FLASK_APP: ${{ secrets.CLOUDBOX_FLASK_APP }}
-          envkey_CLOUDBOX_NOSQL_DB_URI: ${{ secrets.CLOUDBOX_NOSQL_DB_URI }}
-          envkey_CLOUDBOX_SQL_DB_URI: ${{ secrets.CLOUDBOX_SQL_DB_URI }}
-          envkey_AWS_ACCESS_KEY_ID: ${{ secrets.CLOUDBOX_AWS_ACCESS_KEY_ID }}
-          envkey_AWS_CLOUDBOX_REGION: ${{ secrets.CLOUDBOX_AWS_CLOUDBOX_REGION }}
-          envkey_CLOUDBOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.CLOUDBOX_AWS_SECRET_ACCESS_KEY }}
-          envkey_CELERY_BROKER_URL: ${{ secrets.CLOUDBOX_CELERY_BROKER_URL }}
-          envkey_CELERY_RESULT_BACKEND: ${{ secrets.CLOUDBOX_CELERY_RESULT_BACKEND }}
-          envkey_CLOUDINARY_API_KEY: ${{ secrets.CLOUDBOX_CLOUDINARY_API_KEY }}
-          envkey_CLOUDINARY_API_SECRET: ${{ secrets.CLOUDBOX_CLOUDINARY_API_SECRET }}
-          envkey_CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDBOX_CLOUDINARY_CLOUD_NAME }}
-          envkey_DEFAULT_PROFILE_PICTURE: ${{ secrets.CLOUDBOX_DEFAULT_PROFILE_PICTURE }}
-          envkey_DOMAIN: ${{ secrets.CLOUDBOX_DOMAIN }}
-          envkey_EMAIL_HOST_SENDGRID: ${{ secrets.CLOUDBOX_EMAIL_HOST_SENDGRID }}
-          envkey_JWT_SECRET_KEY: ${{ secrets.CLOUDBOX_JWT_SECRET_KEY }}
-          envkey_PAYSTACK_PUBLIC_API_KEY: ${{ secrets.CLOUDBOX_PAYSTACK_PUBLIC_API_KEY }}
-          envkey_PAYSTACK_SECRET_KEY: ${{ secrets.CLOUDBOX_PAYSTACK_SECRET_KEY }}
-          envkey_S3_BUCKET_NAME: ${{ secrets.CLOUDBOX_S3_BUCKET_NAME }}
-          envkey_SECRET_KEY: ${{ secrets.CLOUDBOX_SECRET_KEY }}
-          envkey_SENDGRID_API_KEY: ${{ secrets.CLOUDBOX_SENDGRID_API_KEY }}
-          directory: .
-          file_name: .env
-          fail_on_empty: false
+#       - name: Make envfile
+#         uses: SpicyPizza/create-envfile@v1.3
+#         with:
+#           envkey_FLASK_ENV: ${{ secrets.CLOUDBOX_FLASK_ENV }}
+#           envkey_FLASK_APP: ${{ secrets.CLOUDBOX_FLASK_APP }}
+#           envkey_CLOUDBOX_NOSQL_DB_URI: ${{ secrets.CLOUDBOX_NOSQL_DB_URI }}
+#           envkey_CLOUDBOX_SQL_DB_URI: ${{ secrets.CLOUDBOX_SQL_DB_URI }}
+#           envkey_AWS_ACCESS_KEY_ID: ${{ secrets.CLOUDBOX_AWS_ACCESS_KEY_ID }}
+#           envkey_AWS_CLOUDBOX_REGION: ${{ secrets.CLOUDBOX_AWS_CLOUDBOX_REGION }}
+#           envkey_CLOUDBOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.CLOUDBOX_AWS_SECRET_ACCESS_KEY }}
+#           envkey_CELERY_BROKER_URL: ${{ secrets.CLOUDBOX_CELERY_BROKER_URL }}
+#           envkey_CELERY_RESULT_BACKEND: ${{ secrets.CLOUDBOX_CELERY_RESULT_BACKEND }}
+#           envkey_CLOUDINARY_API_KEY: ${{ secrets.CLOUDBOX_CLOUDINARY_API_KEY }}
+#           envkey_CLOUDINARY_API_SECRET: ${{ secrets.CLOUDBOX_CLOUDINARY_API_SECRET }}
+#           envkey_CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDBOX_CLOUDINARY_CLOUD_NAME }}
+#           envkey_DEFAULT_PROFILE_PICTURE: ${{ secrets.CLOUDBOX_DEFAULT_PROFILE_PICTURE }}
+#           envkey_DOMAIN: ${{ secrets.CLOUDBOX_DOMAIN }}
+#           envkey_EMAIL_HOST_SENDGRID: ${{ secrets.CLOUDBOX_EMAIL_HOST_SENDGRID }}
+#           envkey_JWT_SECRET_KEY: ${{ secrets.CLOUDBOX_JWT_SECRET_KEY }}
+#           envkey_PAYSTACK_PUBLIC_API_KEY: ${{ secrets.CLOUDBOX_PAYSTACK_PUBLIC_API_KEY }}
+#           envkey_PAYSTACK_SECRET_KEY: ${{ secrets.CLOUDBOX_PAYSTACK_SECRET_KEY }}
+#           envkey_S3_BUCKET_NAME: ${{ secrets.CLOUDBOX_S3_BUCKET_NAME }}
+#           envkey_SECRET_KEY: ${{ secrets.CLOUDBOX_SECRET_KEY }}
+#           envkey_SENDGRID_API_KEY: ${{ secrets.CLOUDBOX_SENDGRID_API_KEY }}
+#           directory: .
+#           file_name: .env
+#           fail_on_empty: false
       - name: Log in to Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
