@@ -2,8 +2,9 @@
 
 # Apply database migrations
 echo "Apply database migrations"
-flask db upgrade
-flask db upgrade
+#flask db init
+#flask db migrate
+#flask db upgrade
 
 # Start server
 echo "Starting server"
