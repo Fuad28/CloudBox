@@ -7,4 +7,4 @@ flask db upgrade
 
 # Start server
 echo "Starting server"
-gunicorn -b  0.0.0.0:5000 prod-run:app --workers=3
+gunicorn -b  0.0.0.0:5000 cloudbox:app --workers=3
