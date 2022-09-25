@@ -2,7 +2,7 @@ version: '3.9'
 services:
   web:
     image: fuadadio/cloudbox:${TAG}
-    command: ./wait-for-it.sh db:5432 -- ./docker-entrypoint.sh
+    command: ./wait-for-it.sh postgres:5432 -- ./docker-entrypoint.sh
     ports:
       - 5000:5000
     depends_on:
