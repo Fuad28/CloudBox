@@ -62,7 +62,10 @@ class PaymentVerification(Resource):
 
     def post(self):
         """Handles the webhhook"""
+        print("hereee 1")
         data= request.get_json()
+        print("hereee 2")
+        print(data)
 
         if data["event"] == "charge.success":
             reference_id= data["data"]["reference"]

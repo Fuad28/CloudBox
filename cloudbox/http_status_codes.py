@@ -87,3 +87,4 @@ NOT_ALLOWED_TO_ACCESS_ERROR= {"error": "You're not allowed to access, request ac
 NOT_ALLOWED_TO_PERFORM_ACTION_ERROR= {"error": "You're not allowed to perform this action, request access"}
 NOT_ENOUGH_SPACE_ERROR= {"error": "You're do not have enough space to upload this asset"}
 ASSET_DELETED_SUCCESS= {"success": "asset deleted"}
+EMAIL_UNIQUE_ERROR= {"error": "email exists already"}

@@ -1,6 +1,7 @@
 from flask import request, render_template, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, decode_token
-from flask_restful import Resource,  marshal_with 
+from flask_restful import Resource,  marshal_with, marshal
+
 
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
@@ -13,6 +14,7 @@ from cloudbox.http_status_codes import *
 from cloudbox.models import User
 
 from ..mailer import send_email
+from ..http_status_codes import EMAIL_UNIQUE_ERROR, HTTP_500_INTERNAL_SERVER_ERROR
 from .utils import upload_profile_picture
 
 from .fields import register_fields, login_fields, profile_fields, token_ref_fields
@@ -20,7 +22,6 @@ from .request_parsers import register_args,  login_args, forgot_password_args, r
 from .signals import user_registered
 
 class Register(Resource):
-    @marshal_with(register_fields)
     def post(self):
         args= register_args.parse_args(strict=True)
 
@@ -37,9 +38,13 @@ class Register(Resource):
         args['profile_pict']= os.getenv("DEFAULT_PROFILE_PICTURE")
 
         user= User(password=password_hash, **args) 
-        sql_db.session.add(user)
-        sql_db.session.commit()
 
+        try:
+            sql_db.session.add(user)
+            sql_db.session.commit()
+        except Exception as e:
+            return EMAIL_UNIQUE_ERROR, HTTP_500_INTERNAL_SERVER_ERROR
+        print("hereeeeeeee")
         # send signal
         user_registered.send(current_app._get_current_object(), user= user)
     
@@ -49,7 +54,7 @@ class Register(Resource):
             upload_profile_picture.delay(image_bytes= image_bytes, user_id= user.id)
 
 
-        return user, HTTP_201_CREATED
+        return marshal(user, register_fields), HTTP_201_CREATED
 
 class Login(Resource):
     @marshal_with(login_fields)
