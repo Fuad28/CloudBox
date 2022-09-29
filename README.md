@@ -41,7 +41,8 @@ Also, every asset has a any_one_access attribute that can be set initially by an
 Refer to the documentation for more information on how the API works.
 
 #### Entity relationship diagram.
-![Entity relationship diagram](https://drawsql.app/teams/fuads-team/diagrams/cloudbox)
+
+<img width="1017" alt="Screen Shot 2022-09-29 at 1 55 10 PM" src="https://user-images.githubusercontent.com/63596779/193046805-5e0fce34-5e72-4071-aab2-d597ba6b4193.png">
 
 #### Resources
 
